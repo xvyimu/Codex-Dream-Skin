@@ -46,6 +46,14 @@ npm run probe:session
   **勾选前提（硬）**：evidence `status=ran` 且 **`conversationCovered=true`**（或 `summary.inConversation=true`）且 `summary.conversationPass=true`；`releaseCheckHints.conversationOk=true` 时更佳；exit 0（失败 exit 3）  
   **禁止**：仅因 `conversationPass=true` 而 `inConversation=false`（vacuous true，home 跑也会绿）就勾 conversation
 
+- [ ] **会话视觉抽检（UX-4 / U5，目视，不进 CI）**  
+  在 **conversationCovered=true** 的同一次（或紧随其后的）真机会话上确认：  
+  - [ ] 用户/助手气泡区内**正文可读**（非灰融底）  
+  - [ ] composer 输入字对比足够  
+  - [ ] 装饰/hero **未挡住**输入框与主要按钮  
+  - [ ] 无明显闪烁或持续重布局（动效克制）  
+  未开对话则 **不得**勾本项。
+
 - [ ] 包装纪律（打印 §9.4 期望 + 可选实跑 / skip 留痕）：  
   `pwsh -NoProfile -File scripts/windows/Run-ReleaseProbes.ps1`  
   仅纪律不连 CDP：`…\Run-ReleaseProbes.ps1 -SkipRun`

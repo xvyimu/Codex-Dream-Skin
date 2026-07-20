@@ -30,6 +30,7 @@
 | [`CHANGELOG.md`](./CHANGELOG.md) | 版本时间线 |
 | [`PAIN-POINTS.md`](./PAIN-POINTS.md) | 已知痛点与状态 |
 | [`GLOSSARY.md`](./GLOSSARY.md) | 领域术语 |
+| [`design-tokens.md`](./design-tokens.md) | 视觉 CSS 变量 · 主题调色约定 |
 | [`SECURITY.md`](./SECURITY.md) | 威胁模型 · 报告渠道 · 在/出范围 |
 | [`usage.md`](./usage.md) | 用户侧使用说明 |
 | [`dual-open-policy.md`](./dual-open-policy.md) | 入口纪律与 kick 降级 |
@@ -39,7 +40,8 @@
 | [`research/2026-07-21-peer-landscape-and-architecture.md`](./research/2026-07-21-peer-landscape-and-architecture.md) | 同类项目对照 · 技术债 · 架构优化调研（长文） |
 | [`research/2026-07-21-progress-aligned-debt-and-portfolio.md`](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) | 进度对齐：已关债 · 多方案组合 · 打磨卡片（长文） |
 | [`research/2026-07-21-integrated-master-research.md`](./research/2026-07-21-integrated-master-research.md) | 整合总册（中期） |
-| [`research/2026-07-21-master-research-v2-frozen.md`](./research/2026-07-21-master-research-v2-frozen.md) | **选代入口（冻结）**：四包收口后进度 · G-CAT · 方案库 |
+| [`research/2026-07-21-master-research-v2-frozen.md`](./research/2026-07-21-master-research-v2-frozen.md) | 选代入口 v2（四包后） |
+| [`research/2026-07-21-master-research-v3-ux-visual.md`](./research/2026-07-21-master-research-v3-ux-visual.md) | **选代入口 v3**：工程冻结 + UX/视觉升级方案库 |
 | [`adr/`](./adr/) | 架构决策（0001 合并 · 0002 上游 · 0003 版本源） |
 | 根目录 `CLAUDE.md` | Agent 短索引 |
 
