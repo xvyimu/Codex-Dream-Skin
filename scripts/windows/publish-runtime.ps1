@@ -102,6 +102,43 @@ foreach ($name in @("launch-codex-skin.vbs","launch-switch-theme.vbs","install-a
   }
 }
 
+# Native fast launcher (CodexFastLaunch.exe) — rebuild if source present, then install to programRoot.
+# 这是任务栏 Codex.lnk 的正式入口；控制面 /health 命中时冷启 ~100ms。
+try {
+  $nativeDir = Join-Path $RepoRoot 'apps\native\CodexFastLaunch'
+  $nativeSrc = Join-Path $nativeDir 'CodexFastLaunch.cs'
+  $nativeExe = Join-Path $nativeDir 'bin\CodexFastLaunch.exe'
+  $csc = Join-Path $env:SystemRoot 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+  if (-not (Test-Path -LiteralPath $csc)) {
+    $csc = Join-Path $env:SystemRoot 'Microsoft.NET\Framework\v4.0.30319\csc.exe'
+  }
+  if ((Test-Path -LiteralPath $nativeSrc) -and (Test-Path -LiteralPath $csc)) {
+    $binDir = Join-Path $nativeDir 'bin'
+    New-Item -ItemType Directory -Force -Path $binDir | Out-Null
+    $ico = Join-Path $programRoot 'codex-icon.ico'
+    $cscArgs = @(
+      '/nologo','/target:winexe','/platform:anycpu','/optimize+','/debug-',
+      ('/out:' + $nativeExe),
+      '/reference:System.dll','/reference:System.Core.dll',
+      $nativeSrc
+    )
+    if (Test-Path -LiteralPath $ico) { $cscArgs = @('/win32icon:' + $ico) + $cscArgs }
+    Write-Host "Building CodexFastLaunch.exe..."
+    $pCsc = Start-Process -FilePath $csc -ArgumentList $cscArgs -Wait -PassThru -NoNewWindow
+    if ($pCsc.ExitCode -ne 0) {
+      Write-Warning ("csc exit=" + $pCsc.ExitCode + "; keep previous CodexFastLaunch.exe if any")
+    }
+  }
+  if (Test-Path -LiteralPath $nativeExe) {
+    Copy-Item $nativeExe (Join-Path $programRoot 'CodexFastLaunch.exe') -Force
+    Write-Host ("CodexFastLaunch.exe -> " + (Join-Path $programRoot 'CodexFastLaunch.exe'))
+  } else {
+    Write-Warning 'CodexFastLaunch.exe not built; taskbar will fall back to PowerShell open script'
+  }
+} catch {
+  Write-Warning ("native launcher build: " + $_.Exception.Message)
+}
+
 # start script
 $startSrc = Join-Path $RepoRoot "apps\launcher\start-dream-skin.ps1"
 if (Test-Path -LiteralPath $startSrc) {

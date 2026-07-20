@@ -46,17 +46,33 @@ function Set-Ps([string]$Path, [string]$FilePath, [string]$Extra, [string]$Descr
   $sc.Save()
   Write-Host ('lnk ' + $Path)
 }
+function Set-Exe([string]$Path, [string]$ExePath, [string]$Description) {
+  if (-not (Test-Path -LiteralPath $ExePath)) { Write-Host ('skip ' + $ExePath); return }
+  $dir = Split-Path -Parent $Path
+  if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+  $sc = $shell.CreateShortcut($Path)
+  $sc.TargetPath = $ExePath
+  $sc.Arguments = ''
+  $sc.WorkingDirectory = $programRoot
+  $sc.WindowStyle = 7
+  $sc.Description = $Description
+  $ico = Join-Path $programRoot 'codex-icon.ico'
+  if (Test-Path -LiteralPath $ico) { $sc.IconLocation = "$ico,0" }
+  $sc.Save()
+  Write-Host ('lnk ' + $Path)
+}
 
-# 任务栏/开始菜单/桌面 Codex：直接 powershell.exe -File open-codex-dream-skin.ps1
-#
-# 之前走 wscript → launch-codex-skin.vbs → powershell 有两个问题：
-#   - VBS 里 TryFocusScript 用 WaitOnReturn=True 阻塞 wscript 主线程，冷启动 PS +
-#     Add-Type C# 焦点类 ~700-1500ms/次，累积 1.5-3s，用户感觉"任务栏卡死"。
-#   - VBS 的 /open-healthy 快路径其实和 open-codex-dream-skin.ps1 里的一模一样，
-#     PS 版本命中控制面同样 ~200ms。VBS 是纯多余一层。
-# 直连 PS 后，控制面命中 → 快路径 exit 0；miss → 常规 open。
-Set-Ps (Join-Path $programs 'Codex.lnk') (Join-Path $programRoot 'open-codex-dream-skin.ps1') '-Port 9335 -NoPrompt' 'Open Codex with skin'
-Set-Ps (Join-Path $desktop 'Codex.lnk') (Join-Path $programRoot 'open-codex-dream-skin.ps1') '-Port 9335 -NoPrompt' 'Open Codex with skin'
+# 任务栏/开始菜单/桌面 Codex：优先走原生 CodexFastLaunch.exe（冷启 ~100ms）。
+# 回退：exe 不在时走 powershell -File open-codex-dream-skin.ps1。
+# 历史：VBS WaitOnReturn + 冷启 PS/Add-Type → 1.5-3s 卡死；直连 PS 仍有 ~3.8s 冷启。
+$fastExe = Join-Path $programRoot 'CodexFastLaunch.exe'
+if (Test-Path -LiteralPath $fastExe) {
+  Set-Exe (Join-Path $programs 'Codex.lnk') $fastExe 'Open Codex with skin (native)'
+  Set-Exe (Join-Path $desktop 'Codex.lnk') $fastExe 'Open Codex with skin (native)'
+} else {
+  Set-Ps (Join-Path $programs 'Codex.lnk') (Join-Path $programRoot 'open-codex-dream-skin.ps1') '-Port 9335 -NoPrompt' 'Open Codex with skin'
+  Set-Ps (Join-Path $desktop 'Codex.lnk') (Join-Path $programRoot 'open-codex-dream-skin.ps1') '-Port 9335 -NoPrompt' 'Open Codex with skin'
+}
 Set-Vbs (Join-Path $programs ($switchName + '.lnk')) 'launch-switch-theme.vbs' 'Switch theme'
 Set-Vbs (Join-Path $desktop ($switchName + '.lnk')) 'launch-switch-theme.vbs' 'Switch theme'
 Set-Ps (Join-Path $advanced 'check-and-fix.lnk') (Join-Path $programRoot 'check-and-fix.ps1') '-Port 9335 -Quiet' 'Repair'

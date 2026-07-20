@@ -3,18 +3,22 @@
 .SYNOPSIS
   把所有可写的 Codex/ChatGPT 快捷方式改成带皮肤启动
 
-  入口统一为 powershell.exe -File open-codex-dream-skin.ps1（彻底去掉 VBS 层）。
-  旧版走 wscript → launch-codex-skin.vbs 会在 TryFocusScript 里同步冷启 PS +
-  编译 C# 焦点类，用户点任务栏会感觉"卡死"；托盘入口本就直连 PS，所以不卡。
+  优先入口：CodexFastLaunch.exe（原生冷启 ~100ms）。
+  回退：powershell.exe -File open-codex-dream-skin.ps1。
+  彻底去掉 VBS 层（旧版 WaitOnReturn 会卡死任务栏）。
 #>
 $ErrorActionPreference = "Stop"
 $prog = Join-Path $env:LOCALAPPDATA "Programs\CodexDreamSkin"
 $openPs1 = Join-Path $prog "open-codex-dream-skin.ps1"
-if (-not (Test-Path -LiteralPath $openPs1)) { throw "missing $openPs1" }
+$fastExe = Join-Path $prog "CodexFastLaunch.exe"
+if (-not (Test-Path -LiteralPath $openPs1) -and -not (Test-Path -LiteralPath $fastExe)) {
+  throw "missing open-codex-dream-skin.ps1 and CodexFastLaunch.exe under $prog"
+}
 
 $psExe = (Get-Command powershell.exe).Source
 $shell = New-Object -ComObject WScript.Shell
 $ico = Join-Path $prog "codex-icon.ico"
+$useNative = Test-Path -LiteralPath $fastExe
 
 function Set-SkinShortcut {
   param(
@@ -26,11 +30,17 @@ function Set-SkinShortcut {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
   }
   $sc = $shell.CreateShortcut($Path)
-  $sc.TargetPath = $psExe
-  $sc.Arguments = "-NoLogo -NoProfile -STA -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$openPs1`" -Port 9335 -NoPrompt"
+  if ($useNative) {
+    $sc.TargetPath = $fastExe
+    $sc.Arguments = ""
+    $sc.Description = "$Description (native)"
+  } else {
+    $sc.TargetPath = $psExe
+    $sc.Arguments = "-NoLogo -NoProfile -STA -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$openPs1`" -Port 9335 -NoPrompt"
+    $sc.Description = $Description
+  }
   $sc.WorkingDirectory = $prog
   $sc.WindowStyle = 7
-  $sc.Description = $Description
   if (Test-Path -LiteralPath $ico) { $sc.IconLocation = "$ico,0" }
   $sc.Save()
   Write-Host "SKIN  $Path"
@@ -42,8 +52,12 @@ function Test-BareCodexTarget([string]$Target, [string]$Args) {
   $a = if ($Args) { $Args.ToLowerInvariant() } else { "" }
   # 旧版 VBS 皮肤入口：本次改造视为需要重写（去 VBS 层）
   if ($t -match "wscript\.exe$" -and $a -match "launch-codex-skin\.vbs") { return $true }
-  # 已经是 PS 直连皮肤入口就放过
-  if ($a -match "open-codex-dream-skin|codexdreamskin") { return $false }
+  # 旧版 PS 直连皮肤入口：若已有 native exe，也要重写为 exe
+  if ($useNative -and $a -match "open-codex-dream-skin") { return $true }
+  # 已经是 native 入口就放过
+  if ($t -match "codexfastlaunch\.exe$") { return $false }
+  # 已经是 PS 直连且没有 native，放过
+  if (-not $useNative -and $a -match "open-codex-dream-skin|codexdreamskin") { return $false }
   if ($t -match "chatgpt\.exe$") { return $true }
   if ($t -match "openai\.codex_.*\\app\\(chatgpt|codex)\.exe$") { return $true }
   if ($t -match "\\programs\\codex\\codex\.exe$" -and $t -notmatch "resources") { return $true }

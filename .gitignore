@@ -18,3 +18,4 @@ _*.err
 
 # Never commit install-side state (lives in %LOCALAPPDATA%)
 current.json.bak-*
+apps/native/CodexFastLaunch/bin/
