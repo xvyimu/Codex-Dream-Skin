@@ -98,6 +98,7 @@ try {
   $exactPairs = @(
     @{ Rel = "scripts\control-plane.mjs"; Required = $true },
     @{ Rel = "scripts\cdp-url-guard.mjs"; Required = $true },
+    @{ Rel = "scripts\theme-catalog-budget.mjs"; Required = $true },
     @{ Rel = "scripts\wait-shell.mjs"; Required = $false },
     @{ Rel = "scripts\thumb.mjs"; Required = $false },
     @{ Rel = "scripts\image-metadata.mjs"; Required = $false },

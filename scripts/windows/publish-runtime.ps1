@@ -31,6 +31,7 @@ New-Item -ItemType Directory -Force -Path (Join-Path $dest "core") | Out-Null
 $runtime = Join-Path $RepoRoot "packages\runtime"
 Copy-Item (Join-Path $runtime "scripts\injector.mjs") (Join-Path $dest "scripts\injector.mjs") -Force
 Copy-Item (Join-Path $runtime "scripts\cdp-url-guard.mjs") (Join-Path $dest "scripts\cdp-url-guard.mjs") -Force
+Copy-Item (Join-Path $runtime "scripts\theme-catalog-budget.mjs") (Join-Path $dest "scripts\theme-catalog-budget.mjs") -Force
 Copy-Item (Join-Path $runtime "scripts\image-metadata.mjs") (Join-Path $dest "scripts\image-metadata.mjs") -Force
 foreach ($extra in @("wait-shell.mjs", "control-plane.mjs", "thumb.mjs", "probe-session-dom.mjs")) {
   $srcExtra = Join-Path $runtime ("scripts\" + $extra)

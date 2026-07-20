@@ -15,6 +15,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readImageMetadata } from "./image-metadata.mjs";
 import { validatedDebuggerUrl } from "./cdp-url-guard.mjs";
+import {
+  MAX_THEME_CATALOG_ENTRIES,
+  MAX_THEME_CATALOG_BYTES,
+  MAX_CATALOG_MEMBER_BYTES,
+  evaluateCatalogMemberBudget,
+} from "./theme-catalog-budget.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const here = path.dirname(scriptPath);
@@ -30,11 +36,6 @@ const SKIN_VERSION_TOKEN = "1.3.25";
 const SKIN_VERSION = SKIN_VERSION_TOKEN === "__" + "SKIN_VERSION__" ? "dev" : SKIN_VERSION_TOKEN;
 const MAX_ART_BYTES = 16 * 1024 * 1024;
 const DEFAULT_PAYLOAD_BUDGET_BYTES = 4 * 1024 * 1024;
-// Inject catalog is for F6 cycling only; full library stays on disk for the picker.
-const MAX_THEME_CATALOG_ENTRIES = 8;
-// Bound non-active art so personal libraries cannot push CDP evaluate near 4MB.
-const MAX_THEME_CATALOG_BYTES = 1.6 * 1024 * 1024;
-const MAX_CATALOG_MEMBER_BYTES = 96 * 1024;
 // Strong audit less often: catalog stamp checks already cover normal switches.
 const STRONG_THEME_AUDIT_MS = 60000;
 const BROWSER_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
@@ -521,15 +522,17 @@ async function loadThemeCatalog(themeDir, activeTheme) {
   const stampParts = [];
 
   const add = (key, loadedTheme, { requireFull = false } = {}) => {
-    if (entries.length >= MAX_THEME_CATALOG_ENTRIES) return false;
     const size = loadedTheme.imageBytes.length;
-    if (!requireFull && size > MAX_CATALOG_MEMBER_BYTES) {
-      skippedLarge += 1;
-      return false;
-    }
-    const nextBytes = catalogImageBytes + size;
-    if (entries.length > 0 && nextBytes > MAX_THEME_CATALOG_BYTES) {
-      skippedBudget += 1;
+    const decision = evaluateCatalogMemberBudget({
+      currentEntryCount: entries.length,
+      currentCatalogImageBytes: catalogImageBytes,
+      candidateImageBytes: size,
+      requireFull,
+    });
+    if (!decision.accept) {
+      if (decision.reason === "member-too-large") skippedLarge += 1;
+      else if (decision.reason === "catalog-bytes") skippedBudget += 1;
+      // max-entries: no skip counter (preserve current behavior)
       return false;
     }
     let uniqueKey = key;
@@ -546,7 +549,7 @@ async function loadThemeCatalog(themeDir, activeTheme) {
       artDataUrl: imageDataUrl(loadedTheme),
     });
     fingerprints.push(uniqueKey + ":" + loadedTheme.fingerprint);
-    catalogImageBytes = nextBytes;
+    catalogImageBytes = decision.nextCatalogImageBytes;
     if (loadedTheme.isThumb) thumbCount += 1;
     return true;
   };
