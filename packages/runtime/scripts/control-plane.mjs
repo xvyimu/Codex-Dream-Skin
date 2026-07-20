@@ -4,18 +4,32 @@
  * Endpoints: GET /health, POST /focus, POST /kick, POST /open-healthy
  * Bind: 127.0.0.1 only.
  * Auth: POST mutating routes require control.token via header x-codex-skin-token
- * or ?token= (GET /health stays open for FastLaunch health probes).
+ * only (GET /health stays open for FastLaunch health probes). Query ?token= is ignored.
  */
 import http from "node:http";
 import { spawn } from "node:child_process";
 import { access, readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 
 const DEFAULT_PORT = 9336;
 const PORT_SCAN = 11; // 9336..9346
 export const CONTROL_TOKEN_HEADER = "x-codex-skin-token";
+
+/**
+ * Constant-time string compare for tokens.
+ * - non-string → false
+ * - different byte lengths → false (do NOT call timingSafeEqual)
+ * - same length → timingSafeEqual on utf8 buffers
+ */
+function tokensEqual(provided, expected) {
+  if (typeof provided !== "string" || typeof expected !== "string") return false;
+  const a = Buffer.from(provided, "utf8");
+  const b = Buffer.from(expected, "utf8");
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
 
 async function pathExists(p) {
   try {
@@ -170,8 +184,9 @@ export async function startControlPlane(opts) {
     try {
       const url = new URL(req.url || "/", `http://127.0.0.1`);
       const pathName = url.pathname.replace(/\/+$/, "") || "/";
-      const qToken = url.searchParams.get("token");
-      const hToken = req.headers[CONTROL_TOKEN_HEADER];
+      // Intentionally ignore url.searchParams.get("token") — header only.
+      const rawHeader = req.headers[CONTROL_TOKEN_HEADER];
+      const headerToken = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
       const send = (code, body) => {
         const data = JSON.stringify(body);
         res.writeHead(code, {
@@ -182,14 +197,14 @@ export async function startControlPlane(opts) {
         res.end(data);
       };
 
-      // GET /health stays open: FastLaunch + doctor probes. Mutating POSTs need token.
+      // GET /health stays open: FastLaunch + doctor probes. Mutating POSTs need header token.
       const isHealthGet =
         req.method === "GET" && (pathName === "/health" || pathName === "/");
-      if (!isHealthGet && token && qToken !== token && hToken !== token) {
+      if (!isHealthGet && token && !tokensEqual(headerToken, token)) {
         return send(401, {
           ok: false,
           reason: "token-required",
-          detail: "provide header x-codex-skin-token or ?token= (see control.token)",
+          detail: "provide header x-codex-skin-token (see control.token)",
         });
       }
 

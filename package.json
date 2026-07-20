@@ -15,7 +15,8 @@
     "test:themes": "node packages/themes/theme-schema.test.mjs",
     "test:deps": "node scripts/check-package-deps.mjs",
     "test:control": "node packages/runtime/scripts/control-plane.test.mjs",
-    "test": "npm run test:themes && npm run test:deps"
+    "test:freshness": "node packages/core/state/state-freshness.test.mjs",
+    "test": "npm run test:themes && npm run test:deps && npm run test:freshness"
   },
   "engines": {
     "node": ">=20"

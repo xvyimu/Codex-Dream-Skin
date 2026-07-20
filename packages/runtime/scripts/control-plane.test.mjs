@@ -62,7 +62,19 @@ async function main() {
     assert(noToken.json?.reason === "token-required", "POST /kick no token reason=token-required");
 
     const wrong = await httpJson("POST", `${base}/kick?token=deadbeef`);
-    assert(wrong.status === 401, `POST /kick wrong token → 401 (got ${wrong.status})`);
+    assert(wrong.status === 401, `POST /kick wrong query token → 401 (got ${wrong.status})`);
+
+    const wrongHeader = await httpJson("POST", `${base}/kick`, {
+      headers: { [CONTROL_TOKEN_HEADER]: "deadbeef" },
+    });
+    assert(wrongHeader.status === 401, `POST /kick wrong header → 401 (got ${wrongHeader.status})`);
+
+    // Length mismatch must 401 without throwing (timingSafeEqual length guard).
+    const wrongLen = await httpJson("POST", `${base}/kick`, {
+      headers: { [CONTROL_TOKEN_HEADER]: "x" },
+    });
+    assert(wrongLen.status === 401, `POST /kick length-mismatch header → 401 (got ${wrongLen.status})`);
+    assert(wrongLen.json?.reason === "token-required", "length-mismatch reason=token-required");
 
     const okHeader = await httpJson("POST", `${base}/kick`, {
       headers: { [CONTROL_TOKEN_HEADER]: plane.token },
@@ -70,8 +82,10 @@ async function main() {
     assert(okHeader.status === 200, `POST /kick correct header → 200 (got ${okHeader.status})`);
     assert(okHeader.json?.ok === true, "POST /kick correct header body.ok");
 
+    // Correct query alone must NOT authenticate (header-only contract).
     const okQuery = await httpJson("POST", `${base}/kick?token=${encodeURIComponent(plane.token)}`);
-    assert(okQuery.status === 200, `POST /kick correct query → 200 (got ${okQuery.status})`);
+    assert(okQuery.status === 401, `POST /kick correct query only → 401 (got ${okQuery.status})`);
+    assert(okQuery.json?.reason === "token-required", "correct query only reason=token-required");
   } finally {
     if (plane?.close) await plane.close();
     await rm(stateRoot, { recursive: true, force: true });

@@ -13,7 +13,7 @@
 
 - 文件：`%LOCALAPPDATA%\CodexDreamSkin\control.token`（watch 启动时 `ensureToken` 生成）
 - **GET** `/health`：无 token（FastLaunch / doctor 探测）
-- **POST** `/kick` · `/focus` · `/open-healthy`：必须带 header `x-codex-skin-token` 或 `?token=`，否则 **401** `token-required`
+- **POST** `/kick` · `/focus` · `/open-healthy`：必须带 header `x-codex-skin-token`，否则 **401** `token-required`（query `?token=` 不再放行）
 - 调用方：`kick-inject.mjs` · `Invoke-CodexSkinControl`（launcher-ui）自动读 token 文件
 - 仍只绑定 `127.0.0.1`；token 防本机其它进程误触/乱 kick，不是跨主机认证
 

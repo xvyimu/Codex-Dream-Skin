@@ -21,6 +21,47 @@ async function readJson(path) {
 }
 
 /**
+ * Pure decision given already-resolved path/runtime fields.
+ * No I/O. Used by inspectInjectorPathFreshness and unit tests.
+ *
+ * @param {{
+ *   expectedInjectorPath: string | null,
+ *   actualInjectorPath: string | null,
+ *   expectedRuntimeId: string | null,
+ *   actualRuntimeId: string | null,
+ * }} input
+ * @returns {{ fresh: boolean, reason: string }}
+ */
+export function evaluateInjectorPathFreshness({
+  expectedInjectorPath,
+  actualInjectorPath,
+  expectedRuntimeId,
+  actualRuntimeId,
+}) {
+  const pathFresh =
+    Boolean(expectedInjectorPath) &&
+    Boolean(actualInjectorPath) &&
+    expectedInjectorPath.toLowerCase() === actualInjectorPath.toLowerCase();
+
+  if (!pathFresh) {
+    return { fresh: false, reason: "injector-path-drift" };
+  }
+
+  if (!expectedRuntimeId) {
+    return { fresh: false, reason: "expected-runtimeId-missing" };
+  }
+  if (!actualRuntimeId) {
+    return { fresh: false, reason: "actual-runtimeId-missing" };
+  }
+
+  if (expectedRuntimeId.toLowerCase() === actualRuntimeId.toLowerCase()) {
+    return { fresh: true, reason: "ok" };
+  }
+
+  return { fresh: false, reason: "runtimeId-drift" };
+}
+
+/**
  * @param {{ installRoot?: string, stateRoot?: string }} [opts]
  */
 export async function inspectInjectorPathFreshness({
@@ -94,22 +135,13 @@ export async function inspectInjectorPathFreshness({
     return result;
   }
 
-  const pathFresh =
-    expectedInjectorPath.toLowerCase() === actualInjectorPath.toLowerCase();
-  const runtimeFresh =
-    !expectedRuntimeId ||
-    !actualRuntimeId ||
-    expectedRuntimeId.toLowerCase() === actualRuntimeId.toLowerCase();
-
-  if (pathFresh && runtimeFresh) {
-    result.fresh = true;
-    result.reason = "ok";
-    return result;
-  }
-  if (!pathFresh) {
-    result.reason = "injector-path-drift";
-    return result;
-  }
-  result.reason = "runtimeId-drift";
+  const decision = evaluateInjectorPathFreshness({
+    expectedInjectorPath,
+    actualInjectorPath,
+    expectedRuntimeId,
+    actualRuntimeId,
+  });
+  result.fresh = decision.fresh;
+  result.reason = decision.reason;
   return result;
 }
