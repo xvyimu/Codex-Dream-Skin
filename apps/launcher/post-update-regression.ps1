@@ -49,6 +49,7 @@ function Log([string]$m) {
 }
 
 $report = [ordered]@{
+  schemaVersion = 1
   startedAt = (Get-Date).ToUniversalTime().ToString('o')
   port = $Port
   checks = @()
