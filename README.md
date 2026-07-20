@@ -28,18 +28,20 @@
 
 ## 产品包（终端用户）
 
-```powershell
-# 从开发仓打 zip（-Version 必填，或先 publish 让 runtime token 已 stamp）
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\Build-ProductPackage.ps1 -Version 1.3.25
+**已发布下载（推荐）**：[v1.3.25 · CodexDreamSkin-1.3.25-win-x64.zip](https://github.com/xvyimu/Codex-Dream-Skin/releases/tag/v1.3.25)
 
-# 解压后安装
+```powershell
+# 解压 zip 后安装
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
 
 # 卸载（默认保留用户主题；加 -RemoveState 清 catalog）
 powershell -NoProfile -ExecutionPolicy Bypass -File .\Uninstall.ps1
+
+# 维护者：从开发仓重打 zip（产物在 dist/，gitignore）
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\windows\Build-ProductPackage.ps1 -Version 1.3.25
 ```
 
-产物：`dist/CodexDreamSkin-<ver>-win-x64.zip`（Install / Uninstall / 11 主题 / runtime / CLI / FastLaunch / 换肤 VBS / 使用说明）。  
+包内：Install / Uninstall / 11 主题 / runtime / CLI / FastLaunch / 换肤 VBS / 使用说明。  
 版本：包内 stamp **不写回** git；开发发版仍走 `publish-runtime.ps1 -Version`（ADR 0003）。
 
 ## 架构
