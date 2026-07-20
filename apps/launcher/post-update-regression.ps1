@@ -63,6 +63,12 @@ try {
   $runtimeRoot = Join-Path $programRoot ($current.relativeEnginePath -replace '/', '\')
   . (Join-Path $runtimeRoot 'scripts\common-windows.ps1')
   . (Join-Path $runtimeRoot 'scripts\theme-windows.ps1')
+  # launcher-ui: Test-CodexSkinInjectorPathFresh / Resolve-CodexSkinRuntimeRoot / Repair helpers
+  $launcherUi = @(
+    (Join-Path $programRoot 'lib\launcher-ui.ps1'),
+    (Join-Path $runtimeRoot 'scripts\launcher-ui.ps1')
+  ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+  if ($launcherUi) { . $launcherUi }
 
   $node = Get-DreamSkinNodeRuntime
   $codex = Get-DreamSkinCodexInstall
@@ -161,22 +167,53 @@ try {
     $report.recommendations += 'CDP not up. Start taskbar Codex, or re-run with -Repair.'
   }
 
-  # Package drift or unhealthy CDP/session: always try check-and-fix when Repair
+  # Reattach whenever runtime/injector drifted, package changed, or -Repair asked.
+  # Without this, publish flips current.json but leaves the old watch injector
+  # running; smoke then fails verify against the new scripts while the old
+  # control-plane/renderer keep serving (seen on 1.3.22->1.3.23 publishes).
   $needsFix = $false
+  $driftReason = ''
+  if ($null -ne $cdp -and $null -ne $state) {
+    try {
+      if (Get-Command Test-CodexSkinInjectorPathFresh -ErrorAction SilentlyContinue) {
+        # Resolve runtime info for freshness compare
+        if (-not (Get-Variable -Name runtimeInfo -Scope Local -ErrorAction SilentlyContinue)) {
+          if (Get-Command Resolve-CodexSkinRuntimeRoot -ErrorAction SilentlyContinue) {
+            $runtimeInfo = Resolve-CodexSkinRuntimeRoot -ProgramRoot $programRoot
+          }
+        }
+        if ($runtimeInfo) {
+          $fresh = Test-CodexSkinInjectorPathFresh -State $state -RuntimeInfo $runtimeInfo
+          if (-not $fresh.fresh) {
+            $needsFix = $true
+            $driftReason = [string]$fresh.reason
+          }
+        }
+      } elseif ($state.runtimeId -and $current.runtimeId -and ("$($state.runtimeId)" -cne "$($current.runtimeId)")) {
+        $needsFix = $true
+        $driftReason = 'runtimeId-drift'
+      }
+    } catch {}
+  }
   if ($Repair) {
     if ($null -ne $cdp) { $needsFix = $true }
     if ($state -and $report.checks | Where-Object { $_.name -eq 'state package matches current Codex' -and -not $_.pass }) {
       $needsFix = $true
+      if (-not $driftReason) { $driftReason = 'package-drift' }
     }
   }
   if ($needsFix) {
-    Log 'running check-and-fix -Quiet (normalize state / reattach)'
+    Log ('running check-and-fix -Quiet (normalize/reattach' + $(if ($driftReason) { '; ' + $driftReason } else { '' }) + ')')
     $pFix = Start-Process -FilePath 'powershell.exe' -ArgumentList @(
       '-NoProfile','-STA','-WindowStyle','Hidden','-ExecutionPolicy','RemoteSigned',
       '-File',$fix,'-Port',"$Port",'-Quiet'
     ) -Wait -PassThru
     $report.repaired = $report.repaired -or ($pFix.ExitCode -eq 0)
-    Add-Check 'check-and-fix' ($pFix.ExitCode -eq 0) ('exit=' + $pFix.ExitCode)
+    Add-Check 'check-and-fix' ($pFix.ExitCode -eq 0) ('exit=' + $pFix.ExitCode + $(if ($driftReason) { ' ' + $driftReason } else { '' }))
+    # Refresh state after reattach so smoke sees the new injector path.
+    if (Test-Path -LiteralPath $statePath) {
+      try { $state = Read-DreamSkinState -Path $statePath } catch {}
+    }
   }
 
   $smokeOut = Join-Path $stateRoot 'post-update-smoke-out.txt'

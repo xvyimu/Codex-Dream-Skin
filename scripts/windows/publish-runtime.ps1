@@ -1,4 +1,4 @@
-﻿# Publish codex-skin runtime into Programs\CodexDreamSkin\versions\<id>
+﻿﻿# Publish codex-skin runtime into Programs\CodexDreamSkin\versions\<id>
 # and flip current.json. Does not rewrite Start Menu (already points at open-*.ps1).
 param(
   [string]$RepoRoot = (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent),
@@ -272,8 +272,10 @@ try {
   $post = Join-Path $programRoot 'post-update-regression.ps1'
   if (Test-Path -LiteralPath $post) {
     Write-Host "Refreshing post-update report (Quiet)..."
+    # -Repair so post-update reattaches watch injector onto the just-published
+    # runtime (otherwise smoke verifies with a stale injector from previous version).
     $pPost = Start-Process -FilePath 'powershell.exe' -ArgumentList @(
-      '-NoProfile','-ExecutionPolicy','Bypass','-File',$post,'-Quiet'
+      '-NoProfile','-ExecutionPolicy','Bypass','-File',$post,'-Quiet','-Repair'
     ) -Wait -PassThru -WindowStyle Hidden
     Write-Host ("post-update exit=" + $pPost.ExitCode)
   }
