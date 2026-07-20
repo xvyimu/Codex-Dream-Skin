@@ -105,11 +105,13 @@ html.codex-dream-skin main.main-surface {
 }
 
 html.codex-dream-skin main.main-surface > header.app-header-tint {
-  /* Preserve Codex's native fixed header geometry and side-panel controls. */
+  /* Preserve Codex's native fixed header geometry and side-panel controls.
+     No backdrop-filter here: header blur + chat mutation churn was a freeze
+     source (1.3.12 / 1.3.21 reports: window opens but UI frozen). */
   color: var(--dream-text) !important;
-  background: color-mix(in oklab, var(--dream-surface) 94%, transparent) !important;
+  background: color-mix(in oklab, var(--dream-surface) 96%, transparent) !important;
   border-color: var(--dream-line-soft) !important;
-  backdrop-filter: blur(12px) saturate(1.05) !important;
+  backdrop-filter: none !important;
 }
 
 /* Wide art also reaches the native application menu, which sits outside the
@@ -407,7 +409,8 @@ html.codex-dream-skin [class*="UserMessage"] {
   border: 0 !important;
   border-radius: 16px !important;
   box-shadow: 0 4px 14px color-mix(in oklab, var(--dream-canvas) 16%, transparent) !important;
-  backdrop-filter: blur(6px) saturate(1.04) !important;
+  /* No per-bubble blur: many message nodes * blur freezes the compositor. */
+  backdrop-filter: none !important;
 }
 
 html.codex-dream-skin [data-local-conversation-final-assistant],
