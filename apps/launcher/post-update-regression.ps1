@@ -5,6 +5,27 @@ param(
   [switch]$Quiet
 )
 $ErrorActionPreference = 'Stop'
+
+# PSModulePath hardening for Windows PowerShell 5.1.
+#
+# 触发场景：从 pwsh (PS 7) 里 Start-Process powershell.exe 调本脚本时，
+# 子进程会继承父进程的 PSModulePath——里面已被注入 PS 7 的 Documents\PowerShell\Modules /
+# Program Files\PowerShell\Modules / scoop\apps\pwsh\...\Modules。这些目录里的
+# Microsoft.PowerShell.Security 是 net5.0/net6.0 编译，PS 5.1 (.NET Framework)
+# 加载会抛「无法加载该模块」，Get-AuthenticodeSignature 一进 common-windows.ps1
+# 的 Get-DreamSkinNodeRuntime 就整条链失败——这正是 publish-runtime 之后 report 显示
+# error / stale 的根因（见 PAIN-POINTS #11）。
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+  $ps5Modules = @(
+    (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\Modules'),
+    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
+    (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\Modules')
+  )
+  $env:PSModulePath = ($ps5Modules -join ';')
+  try { Import-Module Microsoft.PowerShell.Security -ErrorAction Stop } catch {
+    Write-Warning ("Import Microsoft.PowerShell.Security failed after PSModulePath reset: " + $_.Exception.Message)
+  }
+}
 $programRoot = [System.IO.Path]::GetFullPath($PSScriptRoot)
 $stateRoot = Join-Path $env:LOCALAPPDATA 'CodexDreamSkin'
 $logPath = Join-Path $stateRoot 'post-update-regression.log'
