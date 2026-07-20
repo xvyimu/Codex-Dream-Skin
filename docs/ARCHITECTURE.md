@@ -161,6 +161,7 @@ watch injector 启动
 
 ## 相关文档
 
+- `PROJECT.md` — **项目总纲**（分层优化 · 模块契约 · 验收 · 路线图；规范优先读这个）
 - `README.md` — 项目入口
 - `CHANGELOG.md` — 版本时间线（合并 12 份 release-*.md）
 - `PAIN-POINTS.md` — 痛点合集

@@ -1,0 +1,35 @@
+# codex-skin
+
+Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题引擎。Node ≥20，ESM。
+
+## 结构
+
+| 路径 | 职责 |
+|------|------|
+| `packages/core/` | CLI + CDP/发现/状态（跨平台逻辑） |
+| `packages/core-win/` | Windows PowerShell 运行时封装 |
+| `packages/runtime/` | 注入/元数据/控制面脚本 |
+| `packages/themes/` | 主题 schema / store / adapter |
+| `apps/launcher/` | 启动器、切换主题 UI、冒烟 |
+| `themes/` | 主题资源（`theme.json` + hero 图） |
+| `vendor/dreamskin/` | 上游 DreamSkin 脚本与资产 |
+| `docs/` | usage / ADR / 痛点 |
+
+## 常用命令
+
+```bash
+npm run doctor
+npm run list
+npm run status
+npm run help
+# 等价: node packages/core/cli.mjs <cmd>
+```
+
+## 约定
+
+- **先读** [`docs/PROJECT.md`](docs/PROJECT.md)：边界、分层、依赖禁止项、验收门禁、Agent 任务模板
+- 改主题：`themes/<id>/theme.json` + 资源；注册见 `packages/themes/`
+- Windows 启动路径优先 `apps/launcher/*.ps1`（用 **pwsh**）
+- 注入/CDP 相关改动先跑 `doctor` / 既有 smoke，勿盲改端口发现
+- 硬性禁止：`core ↔ runtime` 互依赖、第二注入路径、生产 import `vendor/`
+- 详见 `docs/ARCHITECTURE.md`、`docs/usage.md`、`docs/PAIN-POINTS.md`、`docs/adr/`

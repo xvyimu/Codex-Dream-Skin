@@ -50,8 +50,9 @@ powershell -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\codex-ski
 
 ## 文档
 
+- [`PROJECT.md`](docs/PROJECT.md) — **项目总纲**（边界 · 分层 · 模块契约 · 验收 · 路线图；Agent 先读）
 - [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) — 目录 · 边界 · 调用链 · 源码映射
-- [`CHANGELOG.md`](docs/CHANGELOG.md) — 版本时间线（1.3.1 ~ 1.3.13）
+- [`CHANGELOG.md`](docs/CHANGELOG.md) — 版本时间线
 - [`PAIN-POINTS.md`](docs/PAIN-POINTS.md) — 痛点合集与状态
 - [`usage.md`](docs/usage.md) — 使用说明
 - [`dual-open-policy.md`](docs/dual-open-policy.md) — 过渡期双开规则
