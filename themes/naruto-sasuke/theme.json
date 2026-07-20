@@ -8,5 +8,16 @@
     "secondary": "#7fb3ff",
     "surface": "#171019",
     "text": "#ffd9d2"
+  },
+  "copy": {
+    "brand": "CODEX SKIN",
+    "tagline": "冷静切割，只留必要的代码。",
+    "headline": "MAKE SOMETHING WONDERFUL"
+  },
+  "art": {
+    "focusX": 0.72,
+    "focusY": 0.42,
+    "safeArea": "left",
+    "taskMode": "ambient"
   }
 }

@@ -8,5 +8,16 @@
     "secondary": "#f097c8",
     "surface": "#201a40",
     "text": "#e8e2ff"
+  },
+  "copy": {
+    "brand": "CODEX SKIN",
+    "tagline": "星轨与调试器一起闪烁。",
+    "headline": "MAKE SOMETHING WONDERFUL"
+  },
+  "art": {
+    "focusX": 0.72,
+    "focusY": 0.42,
+    "safeArea": "left",
+    "taskMode": "ambient"
   }
 }

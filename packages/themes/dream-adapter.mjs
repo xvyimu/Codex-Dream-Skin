@@ -29,8 +29,8 @@ function isRecord(value) {
 }
 
 /**
- * heige theme.json (hero/colors) → DreamSkin theme.json (image/palette/art)
- * @param {Record<string, unknown>} manifest
+ * heige / 归一化 manifest → DreamSkin theme.json (image/palette/art/copy)
+ * @param {Record<string, unknown>} manifest  loadTheme 归一化结果或原始 heige
  * @param {{ imageFileName?: string }} [opts]
  */
 export function heigeManifestToDreamSkin(manifest, { imageFileName } = {}) {
@@ -39,42 +39,68 @@ export function heigeManifestToDreamSkin(manifest, { imageFileName } = {}) {
   if (typeof image !== "string" || !image.trim()) {
     throw new Error("theme needs hero/image file name");
   }
-  const colors = isRecord(manifest.colors) ? manifest.colors : {};
+
+  // Prefer heige colors; fall back to DreamSkin palette already on disk.
+  const colors = isRecord(manifest.colors)
+    ? manifest.colors
+    : isRecord(manifest.palette)
+      ? manifest.palette
+      : {};
   const copy = isRecord(manifest.copy) ? manifest.copy : {};
-  const art = isRecord(manifest.art) ? manifest.art : {};
+  const artIn = isRecord(manifest.art) ? manifest.art : {};
+
   const palette = {};
-  if (typeof colors.accent === "string" && colors.accent.trim()) {
-    palette.accent = colors.accent.trim();
-  }
-  for (const key of ["secondary", "surface", "text"]) {
+  for (const key of ["accent", "secondary", "surface", "text"]) {
     if (typeof colors[key] === "string" && colors[key].trim()) {
       palette[key] = colors[key].trim();
     }
   }
 
+  const brandSubtitle =
+    (typeof copy.brand === "string" && copy.brand.trim()) ||
+    (typeof manifest.brandSubtitle === "string" && manifest.brandSubtitle.trim()) ||
+    "CODEX SKIN";
+  const tagline =
+    (typeof copy.tagline === "string" && copy.tagline) ||
+    (typeof manifest.tagline === "string" && manifest.tagline) ||
+    "";
+  const quote =
+    (typeof copy.headline === "string" && copy.headline.trim()) ||
+    (typeof manifest.quote === "string" && manifest.quote.trim()) ||
+    "MAKE SOMETHING WONDERFUL";
+  const statusText =
+    (typeof manifest.statusText === "string" && manifest.statusText.trim()) ||
+    "SKIN ONLINE";
+  const projectPrefix =
+    (typeof manifest.projectPrefix === "string" && manifest.projectPrefix) ||
+    "选择项目 · ";
+  const projectLabel =
+    (typeof manifest.projectLabel === "string" && manifest.projectLabel) ||
+    "◉  选择项目";
+
   return {
     schemaVersion: 1,
     id: String(manifest.id ?? "custom"),
     name: String(manifest.name ?? manifest.id ?? "Codex Skin"),
-    brandSubtitle: copy.brand ?? "CODEX SKIN",
-    tagline: copy.tagline ?? copy.headline ?? "",
-    projectPrefix: "选择项目 · ",
-    projectLabel: "◉  选择项目",
-    statusText: "SKIN ONLINE",
-    quote: copy.headline ?? "MAKE SOMETHING WONDERFUL",
+    brandSubtitle,
+    tagline,
+    projectPrefix,
+    projectLabel,
+    statusText,
+    quote,
     appearance: manifest.appearance ?? "auto",
     art: {
-      focusX: art.focusX ?? 0.72,
-      focusY: art.focusY ?? 0.45,
-      safeArea: art.safeArea ?? "left",
-      taskMode: art.taskMode ?? "ambient",
+      focusX: artIn.focusX ?? 0.72,
+      focusY: artIn.focusY ?? 0.45,
+      safeArea: artIn.safeArea ?? "left",
+      taskMode: artIn.taskMode ?? "ambient",
     },
     image,
     palette,
     source: {
       engine: "heige",
-      hero: manifest.hero ?? null,
-      colors,
+      hero: manifest.hero ?? manifest.image ?? null,
+      colors: palette,
     },
   };
 }
@@ -88,7 +114,7 @@ async function atomicWriteJson(filePath, data) {
 }
 
 /**
- * 把 heige 主题目录写入 DreamSkin active-theme，触发 watch 热更新。
+ * 把 heige/catalog 主题目录写入 DreamSkin active-theme，触发 watch 热更新。
  * @param {{ heigeThemeDir: string, stateRoot?: string }} opts
  */
 export async function writeActiveThemeFromHeige({
@@ -129,6 +155,9 @@ export async function writeActiveThemeFromHeige({
     activeRoot,
     imageName,
     themePath: join(activeRoot, "theme.json"),
+    palette: dreamManifest.palette,
+    brandSubtitle: dreamManifest.brandSubtitle,
+    tagline: dreamManifest.tagline,
   };
 }
 
@@ -165,9 +194,11 @@ export async function importHeigeThemeToCatalog({
   // Best-effort catalog thumb for F6 payload slim path
   try {
     const { ensureThemeThumb } = await import("../runtime/scripts/thumb.mjs");
-    await ensureThemeThumb(dest, imageName);
-    dreamManifest.thumb = "thumb.jpg";
-    await atomicWriteJson(join(dest, "theme.json"), dreamManifest);
+    const thumb = await ensureThemeThumb(dest, imageName);
+    if (thumb?.ok && thumb.destPath) {
+      dreamManifest.thumb = basename(thumb.destPath);
+      await atomicWriteJson(join(dest, "theme.json"), dreamManifest);
+    }
   } catch {
     // thumb optional
   }

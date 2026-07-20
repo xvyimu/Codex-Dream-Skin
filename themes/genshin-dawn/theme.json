@@ -8,5 +8,16 @@
     "secondary": "#e0aa3e",
     "surface": "#f2f1fb",
     "text": "#2c3a6b"
+  },
+  "copy": {
+    "brand": "CODEX SKIN",
+    "tagline": "提瓦特的晨光照进终端。",
+    "headline": "MAKE SOMETHING WONDERFUL"
+  },
+  "art": {
+    "focusX": 0.74,
+    "focusY": 0.4,
+    "safeArea": "left",
+    "taskMode": "ambient"
   }
 }

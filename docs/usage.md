@@ -37,7 +37,7 @@ powershell -File "$env:LOCALAPPDATA\Programs\CodexDreamSkin\open-codex-dream-ski
 
 ## 换肤（多主题）
 
-当前默认 **多主题已解锁**（catalog 约 10+ 套：原神 / 火影 / 鸣潮 / Miku 等）。
+当前默认 **多主题已解锁**（catalog 11 套：preset 默认 + 原神 / 火影 / 鸣潮 / 恋与深空 / Miku 等）。
 
 ### 托盘
 

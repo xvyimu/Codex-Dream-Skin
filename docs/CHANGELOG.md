@@ -6,6 +6,15 @@
 
 ---
 
+## unreleased — multi-theme catalog complete (11 bundled)
+
+- **preset 入库**：`themes/preset-arina-hashimoto/`（hero.jpg + heige schema + copy/art/palette），`import-themes` 覆盖默认 DreamSkin 主题。
+- **schema 双格式透传**：`loadTheme` / `validateThemeManifest` 同时接受 heige（`hero`/`colors`/`copy`）与 DreamSkin catalog（`image`/`palette`/`brandSubtitle`/`tagline`/`art`），避免从用户 catalog 再 `apply` 时冲空 palette。
+- **adapter 圆整**：`heigeManifestToDreamSkin` 保留 statusText / project* / art / 完整 palette；`import` 写 `thumb` 字段时跟真实文件名（`thumb.jpg` 或 `thumb.webp`）。
+- **内置 10 套补 copy/art**：每套有 tagline + 构图 focus，不再全是空 tagline + 通用默认 art。
+- **runtime assets theme.json**：默认 preset 补 palette，与 bundled 源一致。
+- 验证：`import-themes` 11/0 · `list` 11 · apply genshin-night / preset / miku / dalao 二次 round-trip palette 非空 · kick ~55ms · doctor fresh。
+
 ## 1.3.24 — wait-shell cold-start + tray native focus + UTF-8 console
 
 - **wait-shell.mjs**: reuse CDP WebSocket across polls; adaptive 120–500ms backoff; default deadline 45s (was 90s hard); structural pass without requiring sidebar. Ready-session bench ~76ms.

@@ -8,5 +8,16 @@
     "secondary": "#f097c8",
     "surface": "#f6f2fb",
     "text": "#4a4668"
+  },
+  "copy": {
+    "brand": "CODEX SKIN",
+    "tagline": "晨光落在代码与心跳之间。",
+    "headline": "MAKE SOMETHING WONDERFUL"
+  },
+  "art": {
+    "focusX": 0.7,
+    "focusY": 0.4,
+    "safeArea": "left",
+    "taskMode": "ambient"
   }
 }

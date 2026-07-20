@@ -8,5 +8,16 @@
     "secondary": "#ffd166",
     "surface": "#17110b",
     "text": "#ffe3c2"
+  },
+  "copy": {
+    "brand": "CODEX SKIN",
+    "tagline": "绝不放弃的那一行补丁。",
+    "headline": "MAKE SOMETHING WONDERFUL"
+  },
+  "art": {
+    "focusX": 0.7,
+    "focusY": 0.4,
+    "safeArea": "left",
+    "taskMode": "ambient"
   }
 }

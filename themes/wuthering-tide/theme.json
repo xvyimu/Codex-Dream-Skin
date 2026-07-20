@@ -8,5 +8,16 @@
     "secondary": "#9aa8b0",
     "surface": "#0d1418",
     "text": "#d8eef0"
+  },
+  "copy": {
+    "brand": "CODEX SKIN",
+    "tagline": "声骸回响，终端也有潮声。",
+    "headline": "MAKE SOMETHING WONDERFUL"
+  },
+  "art": {
+    "focusX": 0.7,
+    "focusY": 0.45,
+    "safeArea": "left",
+    "taskMode": "ambient"
   }
 }

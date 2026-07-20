@@ -510,7 +510,7 @@ codex-skin/
 │   ├── runtime/             # L4 自包含发布蓝图
 │   └── core-win/            # L1/L2 Windows 共享库
 ├── scripts/windows/         # 发布 · 同步 · 探针 · E2E
-├── themes/                  # 10 套内置主题源
+├── themes/                  # 11 套内置主题源（含 preset-arina-hashimoto）
 ├── vendor/dreamskin/        # 上游只读镜像
 ├── docs/                    # 本文件与 ADR 等
 ├── package.json             # bin: codex-skin → cli.mjs
@@ -554,7 +554,7 @@ codex-skin/
 | Runtime | `1.3.18-118f81` |
 | Injector | 存活（诊断时 PID 8212） |
 | CDP | 9335（Codex 未运行时 portOpen=false） |
-| 用户主题 | 11 套（含原神/鸣潮/恋与深空/火影/Miku 等） |
+| 用户主题 | 11 套（preset + 原神/鸣潮/恋与深空/火影/Miku 等） |
 | Git | `main` 已推送含 `45ee6c5` heige-fused look |
 | 上游基线 | `e776fa6`（nothing absorbed） |
 

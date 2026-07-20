@@ -123,7 +123,7 @@ export async function runCli(argv, overrides = {}) {
       notes: [
         "默认 apply 不再启动第二套 injector，只更新 %LOCALAPPDATA%\\CodexDreamSkin\\active-theme。",
         "请先用任务栏 Codex 打开带 watch 的会话；改主题后数秒内应自动换肤。",
-        "import-themes 会把仓内 10 套主题导入 DreamSkin themes 目录（需先 unlock）。",
+        "import-themes 会把仓内 themes/* 全部导入 DreamSkin themes 目录（含 preset，需先 unlock）。",
       ],
     };
   }
