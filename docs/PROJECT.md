@@ -4,7 +4,7 @@
 > **仓库**：https://github.com/xvyimu/Codex-Dream-Skin  
 > **开发仓**：`D:\orca\codex-skin`  
 > **安装态**：`%LOCALAPPDATA%\Programs\CodexDreamSkin`  
-> **当前主线**：runtime `1.3.25-4dca30` · HEAD `f833ee8`（11-theme catalog · heige-fused）  
+> **当前主线**：runtime `1.3.25` · HEAD 见 git `main`（11-theme catalog · product package · heige-fused）  
 > **文档原则**：先约束，后生成｜先架构，后界面｜先验证，后合并  
 > **适用**：Agent / 开源工具 / AI 辅助开发协作
 
@@ -59,7 +59,8 @@
 | 日常 | 任务栏 / 开始菜单 **Codex** → 安装态 launcher | 终端用户 |
 | 开发 CLI | `node packages/core/cli.mjs <cmd>` | 开发 / Agent |
 | 换肤 | 托盘「换肤…」· F6 · `apply --theme` | 用户 / 自动化 |
-| 发布 | `scripts/windows/publish-runtime.ps1` | 维护者 |
+| 发布（开发） | `scripts/windows/publish-runtime.ps1 -Version` | 维护者 · 写回 git tree 版本 |
+| 产品 zip | `Build-ProductPackage.ps1` → `Install.ps1` | 终端用户分发 · 只 stamp 包内/安装态 |
 
 ### 1.4 成功标准（产品级）
 
@@ -551,18 +552,17 @@ codex-skin/
 
 ---
 
-## 附录 A · 当前环境快照（2026-07-20 晚间）
+## 附录 A · 当前环境快照（2026-07-20 晚）
 
 | 项 | 值 |
 |----|-----|
 | Codex 包 | `OpenAI.Codex_26.715.4045.0` |
-| Runtime | `1.3.25-4dca30`（`injectorPathFreshness.fresh=true`） |
-| Injector | 存活（诊断时 PID 7296 · control 9336） |
-| CDP | 9335 开放 · `Chrome/150.0.7871.124` |
-| 用户主题 | 11 套（import-themes 11/0 · list 去重） |
-| 热切换 | kick genshin-night ~55ms · preset-arina-hashimoto ~79ms |
-| Git | `main` @ `f833ee8`（已 push origin） |
+| Runtime | `1.3.25-*`（以 `current.json` / doctor `injectorPathFreshness` 为准） |
+| 用户主题 | 11 套（import-themes · list 去重） |
+| 热切换 | kick ~55–80ms 量级 |
+| Git | `main`：主题 catalog + 产品包 + review 修复（见 `git log`） |
 | 上游基线 | `e776fa6`（nothing absorbed） |
+| 产品包 | `Build-ProductPackage.ps1 -Version` → zip；Install soft reattach + GC |
 
 ## 附录 B · 内置/用户主题 ID
 

@@ -23,14 +23,15 @@
 - **清理误导项**：重复 `Codex Skin.lnk`、旧「Codex Skin 高级」、散落的管理/回归顶层项、名称含 heige / Codex Studio 的残留 lnk。
 - **`refresh-shortcuts.ps1`** 改为转发到 install-ux（避免两套布局打架）。
 - **#21 文档化**：商店磁贴/包 AUMID 裸启为 OS 硬限；`usage.md` + `dual-open-policy.md` 写清「只用任务栏钉」；FastLaunch AUMID=`CodexDreamSkin.FastLaunch`。
-- **#20**：本机 Programs 无独立 heige 目录；文档删除过时 dual-open 调试开关说明。
+- **#20**：仓内 heige 入口已清；ux 扫删 heige/Studio lnk；Programs 独立 heige 目录仍须用户手卸。
 
 ### 产品包（终端用户分发）
 
-- **`Build-ProductPackage.ps1`** → `dist/CodexDreamSkin-<ver>-win-x64.zip`（~3.5MB，含 11 主题 + runtime + CLI + FastLaunch + usage 文档）。
-- **`Install.ps1` / `Uninstall.ps1`**：写 `Programs\CodexDreamSkin` + 导入主题 + 快捷方式；安装后 **soft reattach** 已运行 injector 到新 runtime + versions GC（current+上一版）；卸载默认可保留用户 catalog，清理 #18 布局快捷方式。
-- 版本权威：包内 stamp 不写回 git tree（ADR 0003）；`-Version` 或已 stamp 的 runtime token。
-- 验收：Install exit 0 · doctor fresh · package CLI apply kick ~80ms · STRUCTURAL_PASS。
+- **`Build-ProductPackage.ps1`** → `dist/CodexDreamSkin-<ver>-win-x64.zip`（含 11 主题 + runtime + CLI + FastLaunch + `launch-switch-theme.vbs` + usage 文档）。
+- **`Install.ps1` / `Uninstall.ps1`**：写 `Programs\CodexDreamSkin` + 导入主题 + 快捷方式；安装后 **soft reattach** 已运行 injector 到新 runtime + versions GC（current+上一版）；卸载清理 #18 全套入口（Codex/ChatGPT/换肤/Codex 工具/Startup），默认可保留用户 catalog。
+- **版本权威（ADR 0003）**：`-Version` 或已 stamp runtime token / package-meta / payload `VERSION`；**禁止**硬编码默认；只 stamp **payload/install-tree**，git tree 写回仍只走 `publish-runtime.ps1`。
+- **runtimeId**：内容哈希 6 位（injector+renderer+VERSION），同包可复现。
+- 验收：Install exit 0 · doctor fresh · package CLI apply · STRUCTURAL_PASS。
 
 ## 1.3.24 — wait-shell cold-start + tray native focus + UTF-8 console
 

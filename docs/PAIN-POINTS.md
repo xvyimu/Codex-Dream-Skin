@@ -37,9 +37,9 @@
 |---|---|---|---|
 | 16 | 控制面 `/focus` ~1s（spawn PS） | 1.3.9 | 已绕过 · 任务栏/托盘 native 进程内 focus；`/open-healthy` 异步 |
 | 17 | VBS 快路径 ~2.5s（WinHttp + focus PS 冷启动） | 1.3.9 | 已废弃 · 任务栏改 CodexFastLaunch.exe |
-| 18 | 修复/回归工具链偏工程师向，普通用户误点 | 1.3.2 | 已修 · `install-ux-shortcuts` 唯一源：日常=Codex/ChatGPT/换肤；工具仅「Codex 工具」文件夹；清重复 Codex Skin / 旧高级夹 |
+| 18 | 修复/回归工具链偏工程师向，普通用户误点 | 1.3.2 | 已修 · `install-ux` 唯一源；产品包带 VBS + 使用说明；Uninstall 清 Codex 工具/ChatGPT/Startup |
 | 19 | ChatGPT 8 Electron 进程，MainWindow 难找 | 1.3.9 | 已修 · 进程评分修好后生效 |
-| 20 | heige studio 目录残留（无进程） | 1.3.2 | 已清 · vendor/heige 与 legacy-inject 已删；ux 脚本扫删 heige/Codex Studio lnk；本机 Programs 无独立 heige 目录 |
+| 20 | heige studio 目录残留（无进程） | 1.3.2 | 仓内已清（vendor/heige · legacy-inject 删）；ux 扫删 heige/Studio lnk；**Programs 下独立 heige 目录仍须用户手卸**（非通用自动） |
 | 21 | 商店磁贴/AUMID/Codex-X 仍可能裸启 | 1.3.2 | 已知硬限 · 文档化；FastLaunch 独立 AUMID；日常钉任务栏 Codex（见 usage / dual-open-policy） |
 | 22 | 控制台中文乱码（GBK 工具链） | 1.3.2 | 已修 · `Initialize-CodexSkinConsoleUtf8` + 入口 chcp 65001 / UTF-8 OutputEncoding |
 | 23 | verify 对 chat bubble 选择器 `data-user-message-bubble` not found | 1.3.2 | 已修 · 多 fallback + conversationOk；真会话 verify 通过 |

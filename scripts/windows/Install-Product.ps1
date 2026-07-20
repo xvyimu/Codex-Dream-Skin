@@ -67,24 +67,69 @@ function Copy-Tree([string]$Src, [string]$Dst) {
   Copy-Item -Path (Join-Path $Src "*") -Destination $Dst -Recurse -Force
 }
 
+function Get-TokenFromInjector([string]$InjectorPath) {
+  if (-not (Test-Path -LiteralPath $InjectorPath)) { return $null }
+  $m = Select-String -Path $InjectorPath -Pattern 'SKIN_VERSION_TOKEN = "([^"]+)"' | Select-Object -First 1
+  if (-not $m) { return $null }
+  $v = $m.Matches[0].Groups[1].Value
+  if ($v -match '^__') { return $null }
+  return $v
+}
+
 function Get-PackageVersion([string]$Payload, [string]$Explicit) {
-  if ($Explicit) { return $Explicit }
+  # ADR 0003: never invent a hardcoded default like "1.3.25".
+  if ($Explicit) {
+    if ($Explicit -notmatch '^\d+\.\d+\.\d+') {
+      throw "Version must look like semver x.y.z (got: $Explicit)"
+    }
+    return $Explicit
+  }
   $meta = Join-Path $PackageRoot "package-meta.json"
   if (Test-Path -LiteralPath $meta) {
     try {
       $m = Get-Content -LiteralPath $meta -Raw -Encoding UTF8 | ConvertFrom-Json
-      if ($m.version) { return [string]$m.version }
+      if ($m.version -and "$($m.version)" -notmatch '^__') { return [string]$m.version }
     } catch {}
   }
-  $verFile = Join-Path $Payload "runtime\VERSION"
-  if (-not (Test-Path -LiteralPath $verFile)) {
-    $verFile = Join-Path $PackageRoot "packages\runtime\VERSION"
+  foreach ($verFile in @(
+    (Join-Path $Payload "runtime\VERSION"),
+    (Join-Path $PackageRoot "packages\runtime\VERSION")
+  )) {
+    if (Test-Path -LiteralPath $verFile) {
+      $v = (Get-Content -LiteralPath $verFile -Raw).Trim()
+      if ($v -and $v -notmatch '^__') { return $v }
+    }
   }
-  if (Test-Path -LiteralPath $verFile) {
-    $v = (Get-Content -LiteralPath $verFile -Raw).Trim()
-    if ($v) { return $v }
+  foreach ($inj in @(
+    (Join-Path $Payload "runtime\scripts\injector.mjs"),
+    (Join-Path $Payload "packages\runtime\scripts\injector.mjs")
+  )) {
+    $tok = Get-TokenFromInjector -InjectorPath $inj
+    if ($tok) { return $tok }
   }
-  return "1.3.25"
+  throw @"
+Cannot resolve package version (ADR 0003).
+  Pass -Version x.y.z, or ship package-meta.json / payload/runtime/VERSION / stamped injector token.
+  No hardcoded default is used.
+"@
+}
+
+function Get-ContentHash6([string[]]$Paths) {
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $ms = New-Object System.IO.MemoryStream
+    foreach ($p in $Paths) {
+      if (-not (Test-Path -LiteralPath $p)) { continue }
+      $bytes = [System.IO.File]::ReadAllBytes($p)
+      $ms.Write($bytes, 0, $bytes.Length)
+    }
+    $ms.Position = 0
+    $hash = $sha.ComputeHash($ms)
+    $hex = -join ($hash | ForEach-Object { $_.ToString("x2") })
+    return $hex.Substring(0, 6)
+  } finally {
+    $sha.Dispose()
+  }
 }
 
 $payloadRoot = Resolve-PayloadRoot -Root $PackageRoot
@@ -98,6 +143,7 @@ if ($isRepoLayout) {
   $corePkgSrc = Join-Path $payloadRoot "packages\core"
   $themesPkgSrc = Join-Path $payloadRoot "packages\themes"
   $toolsSrc = Join-Path $payloadRoot "scripts\windows"
+  $docsSrc = Join-Path $payloadRoot "docs"
   $nativeExeSrc = Join-Path $payloadRoot "apps\native\CodexFastLaunch\bin\CodexFastLaunch.exe"
 } else {
   $runtimeSrc = Join-Path $payloadRoot "runtime"
@@ -107,12 +153,19 @@ if ($isRepoLayout) {
   $corePkgSrc = Join-Path $payloadRoot "packages\core"
   $themesPkgSrc = Join-Path $payloadRoot "packages\themes"
   $toolsSrc = Join-Path $payloadRoot "tools"
+  $docsSrc = Join-Path $payloadRoot "docs"
   $nativeExeSrc = Join-Path $payloadRoot "native\CodexFastLaunch.exe"
 }
 
 $version = Get-PackageVersion -Payload $payloadRoot -Explicit $Version
-$hash = -join ((1..6) | ForEach-Object { "{0:x}" -f (Get-Random -Max 16) })
-$runtimeId = "$version-$hash"
+$hashSeed = @(
+  (Join-Path $runtimeSrc "scripts\injector.mjs"),
+  (Join-Path $runtimeSrc "assets\renderer-inject.js"),
+  (Join-Path $runtimeSrc "VERSION")
+)
+$hash6 = Get-ContentHash6 -Paths $hashSeed
+if (-not $hash6) { $hash6 = "000000" }
+$runtimeId = "$version-$hash6"
 
 $programRoot = Join-Path $env:LOCALAPPDATA "Programs\CodexDreamSkin"
 $stateRoot = Join-Path $env:LOCALAPPDATA "CodexDreamSkin"
@@ -143,14 +196,17 @@ if (Test-Path -LiteralPath $imgCore) {
 }
 Copy-Item (Join-Path $runtimeSrc "assets\*") (Join-Path $dest "assets\") -Force
 
-# Stamp version token in installed copies
+# Align install-tree token with resolved package version (payload-only; not git tree).
+# Git tree write-back remains publish-runtime.ps1 exclusive (ADR 0003).
 $versionReplacement = 'const SKIN_VERSION_TOKEN = "' + $version + '";'
 foreach ($rel in @("scripts\injector.mjs", "assets\renderer-inject.js")) {
   $target = Join-Path $dest $rel
   if (-not (Test-Path -LiteralPath $target)) { continue }
   $text = [System.IO.File]::ReadAllText($target)
-  $text = [regex]::Replace($text, 'const SKIN_VERSION_TOKEN = "[^"]*";', $versionReplacement)
-  [System.IO.File]::WriteAllText($target, $text, [System.Text.UTF8Encoding]::new($false))
+  if ($text -notmatch [regex]::Escape($versionReplacement)) {
+    $text = [regex]::Replace($text, 'const SKIN_VERSION_TOKEN = "[^"]*";', $versionReplacement)
+    [System.IO.File]::WriteAllText($target, $text, [System.Text.UTF8Encoding]::new($false))
+  }
 }
 Set-Content -Path (Join-Path $dest "VERSION") -Value $version -Encoding ascii -NoNewline
 
@@ -187,17 +243,41 @@ foreach ($name in @(
   }
 }
 
-# Tools
+# Tools + VBS (#18 Codex switch theme needs launch-switch-theme.vbs)
 foreach ($name in @(
   "install-all-skin-launchers.ps1",
   "install-ux-shortcuts.ps1",
   "generate-theme-thumbs.ps1",
-  "probe-session-dom.mjs"
+  "probe-session-dom.mjs",
+  "launch-switch-theme.vbs",
+  "launch-codex-skin.vbs",
+  "launch-switch-theme.js"
 )) {
   $src = Join-Path $toolsSrc $name
+  if (-not (Test-Path -LiteralPath $src) -and $isRepoLayout) {
+    $src = Join-Path $payloadRoot ("scripts\windows\" + $name)
+  }
   if (Test-Path -LiteralPath $src) {
     Copy-Item $src (Join-Path $programRoot $name) -Force
   }
+}
+
+# Usage docs for install-ux Set-Doc (#18 tools/usage shortcut)
+$usageCnName = -join ([char]0x4F7F, [char]0x7528, [char]0x8BF4, [char]0x660E) + ".md"
+$usageCandidates = @(
+  (Join-Path $docsSrc $usageCnName),
+  (Join-Path $docsSrc "usage.md"),
+  (Join-Path $payloadRoot ("docs\" + $usageCnName)),
+  (Join-Path $payloadRoot "docs\usage.md"),
+  (Join-Path $PackageRoot "docs\usage.md")
+)
+$usageHit = $usageCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if ($usageHit) {
+  Copy-Item $usageHit (Join-Path $programRoot $usageCnName) -Force
+  Copy-Item $usageHit (Join-Path $programRoot "USAGE.md") -Force
+  Write-Host "usage doc -> program root"
+} else {
+  Write-Warning "usage.md not in package; tools/usage shortcut will skip"
 }
 
 # CLI packages (for import-themes / apply / doctor from install tree)
@@ -383,6 +463,7 @@ Write-Host "  1) Ensure OpenAI Codex (Store) is installed"
 Write-Host "  2) Click taskbar / Start Menu Codex (if injector not already running)"
 Write-Host "  3) Optional: node `"$cliRoot\packages\core\cli.mjs`" apply --theme genshin-night"
 Write-Host "  4) Optional: node `"$cliRoot\packages\core\cli.mjs`" doctor"
+Write-Host "Note: Store tile bare launch is an OS limit — use the taskbar pin."
 
 if (-not $NoStart) {
   $open = Join-Path $programRoot "open-codex-dream-skin.ps1"
