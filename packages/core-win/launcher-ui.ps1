@@ -584,54 +584,80 @@ function Get-CodexSkinProcessIdSet {
 }
 
 function Focus-CodexSkinWindow {
+  # 找 Codex 顶层窗口并强制置前。
+  #
+  # 稳定性 (PAIN-POINTS #4)：EnumWindows / MainWindowHandle 在以下瞬时状态会假空——
+  #   - Electron 冷启动窗口刚创建但 WM_CREATE 未完成
+  #   - MainWindowHandle 缓存在 System.Diagnostics.Process，需要 Refresh()
+  #   - 切窗/最小化恢复的 100–300ms 间隔
+  # 因此我们在 $TimeoutMs 预算内做 bounded retry：MainWindow → EnumWindows → sleep 120ms 再来一遍。
+  # 只要预算内任一轮命中就返回；全灭再走 AppActivate 兜底。
   param(
     [Parameter(Mandatory = $true)]$Codex,
     [scriptblock]$PathEqual = $null,
-    [int]$TimeoutMs = 800
+    # Cold first call: SetForegroundWindow may reject all 4 hits (~300ms each) —
+    # so budget 1800ms so at least a second retry round can succeed after the
+    # attach-thread-input warm-up succeeds. Subsequent calls typically finish
+    # under 400ms via the MainWindow fast path.
+    [int]$TimeoutMs = 1800
   )
   $sw = [System.Diagnostics.Stopwatch]::StartNew()
+  $attempt = 0
+  $lastHitCount = 0
+  $lastPidCount = 0
   try {
     Ensure-CodexSkinFocusType
-    $pids = Get-CodexSkinProcessIdSet -Codex $Codex -PathEqual $PathEqual
-    if ($pids.Count -eq 0) {
-      Write-CodexSkinLog 'Focus Codex: no matching process pids'
-      return $false
-    }
-    # 1) Fast path: process MainWindowHandle
-    # NOTE: do not use $pid — it aliases automatic $PID (read-only) on Windows PowerShell.
-    foreach ($processId in $pids) {
-      if ($sw.ElapsedMilliseconds -gt $TimeoutMs) { break }
-      try {
-        $proc = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
-        if ($null -eq $proc) { continue }
-        $hwnd = $proc.MainWindowHandle
-        if ($hwnd -ne [IntPtr]::Zero) {
-          if ([CodexSkin.WinFocus5]::FocusHwnd($hwnd)) {
-            Write-CodexSkinLog ("Focused Codex MainWindow pid=$processId ms=$($sw.ElapsedMilliseconds)")
-            return $true
-          }
-        }
-      } catch {}
-    }
-    # 2) EnumWindows across process tree
-    $hits = [CodexSkin.WinFocus5]::FindWindows($pids)
-    Write-CodexSkinLog ("Focus enum pids=$($pids.Count) hits=$($hits.Count)")
-    foreach ($hit in $hits) {
-      if ($sw.ElapsedMilliseconds -gt $TimeoutMs) { break }
-      $focusedHit = [CodexSkin.WinFocus5]::FocusHwnd($hit.Hwnd)
-      if ($focusedHit) {
-        [void](Invoke-CodexSkinFlashWindow -Hwnd $hit.Hwnd)
-        [void](Try-CodexSkinAppActivate)
-        Write-CodexSkinLog ("Focused Codex EnumWindows pid=$($hit.Pid) class=$($hit.ClassName) ms=$($sw.ElapsedMilliseconds)")
-        return $true
+    while ($sw.ElapsedMilliseconds -lt $TimeoutMs) {
+      $attempt++
+      # 每轮重新收集 pids：Electron 会在启动早期 spawn 若干子进程，pid 集合会扩张。
+      $pids = Get-CodexSkinProcessIdSet -Codex $Codex -PathEqual $PathEqual
+      $lastPidCount = $pids.Count
+      if ($pids.Count -eq 0) {
+        if ($sw.ElapsedMilliseconds -ge ($TimeoutMs - 120)) { break }
+        Start-Sleep -Milliseconds 120
+        continue
       }
+      # 1) Fast path: process MainWindowHandle (with Refresh so we're not on cached zero).
+      # NOTE: do not use $pid — it aliases automatic $PID (read-only) on Windows PowerShell.
+      foreach ($processId in $pids) {
+        if ($sw.ElapsedMilliseconds -gt $TimeoutMs) { break }
+        try {
+          $proc = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
+          if ($null -eq $proc) { continue }
+          try { $proc.Refresh() } catch {}
+          $hwnd = $proc.MainWindowHandle
+          if ($hwnd -ne [IntPtr]::Zero) {
+            if ([CodexSkin.WinFocus5]::FocusHwnd($hwnd)) {
+              Write-CodexSkinLog ("Focused Codex MainWindow pid=$processId attempt=$attempt ms=$($sw.ElapsedMilliseconds)")
+              return $true
+            }
+          }
+        } catch {}
+      }
+      # 2) EnumWindows across process tree
+      $hits = [CodexSkin.WinFocus5]::FindWindows($pids)
+      $lastHitCount = $hits.Count
+      foreach ($hit in $hits) {
+        if ($sw.ElapsedMilliseconds -gt $TimeoutMs) { break }
+        $focusedHit = [CodexSkin.WinFocus5]::FocusHwnd($hit.Hwnd)
+        if ($focusedHit) {
+          [void](Invoke-CodexSkinFlashWindow -Hwnd $hit.Hwnd)
+          [void](Try-CodexSkinAppActivate)
+          Write-CodexSkinLog ("Focused Codex EnumWindows pid=$($hit.Pid) class=$($hit.ClassName) attempt=$attempt ms=$($sw.ElapsedMilliseconds)")
+          return $true
+        }
+      }
+      # Only sleep + retry if we still have budget for another round.
+      $remaining = $TimeoutMs - $sw.ElapsedMilliseconds
+      if ($remaining -lt 180) { break }
+      Start-Sleep -Milliseconds 120
     }
     # Last resort: AppActivate by title
     if (Try-CodexSkinAppActivate) {
-      Write-CodexSkinLog ("Focused Codex AppActivate ms=$($sw.ElapsedMilliseconds)")
+      Write-CodexSkinLog ("Focused Codex AppActivate attempts=$attempt ms=$($sw.ElapsedMilliseconds)")
       return $true
     }
-    Write-CodexSkinLog ("Focus Codex: no window ms=$($sw.ElapsedMilliseconds) pids=$($pids.Count) hits=$($hits.Count)")
+    Write-CodexSkinLog ("Focus Codex: no window attempts=$attempt ms=$($sw.ElapsedMilliseconds) pids=$lastPidCount hits=$lastHitCount")
   } catch {
     Write-CodexSkinLog ('Focus Codex skipped: ' + $_.Exception.Message)
   }
