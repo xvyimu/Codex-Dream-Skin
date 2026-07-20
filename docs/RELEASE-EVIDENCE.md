@@ -60,4 +60,5 @@ npm run probe:session
 ## 说明
 
 - Quiet post-update exit=2 + soft reattach OK = 正式降级，**不算**发版失败（见 publish 日志 `soft reattach OK` + 失败 check 摘要）
+- 代码签名 / SmartScreen（#24）：近期不购证；决策见 [plans/codesign-decision-2026-07-21.md](./plans/codesign-decision-2026-07-21.md)
 - 链：PROJECT §6 · CONTRIBUTING §C-3/C-4 · §9.4 · 建议 baseline：`write-baseline.ps1` · 留痕：`docs/evidence/`

@@ -43,7 +43,7 @@
 | 21 | 商店磁贴/AUMID/Codex-X 仍可能裸启 | 1.3.2 | 已知硬限 · 文档化；FastLaunch 独立 AUMID；日常钉任务栏 Codex（见 usage / dual-open-policy） |
 | 22 | 控制台中文乱码（GBK 工具链） | 1.3.2 | 已修 · `Initialize-CodexSkinConsoleUtf8` + 入口 chcp 65001 / UTF-8 OutputEncoding |
 | 23 | verify 对 chat bubble 选择器 `data-user-message-bubble` not found | 1.3.2 | 已修 · 多 fallback + conversationOk；真会话 verify 通过 |
-| 24 | 首次运行 SmartScreen 拦截未签名入口 / FastLaunch | 1.3.25 | **已知** · 未 OV 签名；用户点「更多信息 → 仍要运行」；签名属 P3 长期规划（见 usage） |
+| 24 | 首次运行 SmartScreen 拦截未签名入口 / FastLaunch | 1.3.25 | **已知** · 未 OV 签名；用户点「更多信息 → 仍要运行」；签名属 P3 长期规划（见 usage）；决策见 [`plans/codesign-decision-2026-07-21.md`](./plans/codesign-decision-2026-07-21.md)（2026-07-21 · 近期 No-Go 购证 / 维持 A） |
 
 ---
 
