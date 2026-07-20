@@ -14,10 +14,12 @@
     "status": "node packages/core/cli.mjs status",
     "help": "node packages/core/cli.mjs help",
     "test:themes": "node packages/themes/theme-schema.test.mjs",
+    "test:store": "node packages/themes/theme-store.test.mjs",
+    "test:adapter": "node packages/themes/dream-adapter.test.mjs",
     "test:deps": "node scripts/check-package-deps.mjs",
     "test:control": "node packages/runtime/scripts/control-plane.test.mjs",
     "test:freshness": "node packages/core/state/state-freshness.test.mjs",
-    "test": "npm run test:themes && npm run test:deps && npm run test:freshness"
+    "test": "npm run test:themes && npm run test:store && npm run test:adapter && npm run test:deps && npm run test:freshness"
   },
   "engines": {
     "node": ">=20"

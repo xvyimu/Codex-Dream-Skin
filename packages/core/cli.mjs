@@ -229,15 +229,27 @@ export async function runCli(argv, overrides = {}) {
     const requestedPort = args.port !== undefined ? portFrom(args.port) : DEFAULT_CDP_PORT;
     // discovery.app is needed for runtimeDiagnostics; the other three are
     // independent — run them alongside discovery instead of after it.
-    const [discovery, dreamSkin, themes, injectorPathFreshness] = await Promise.all([
+    const [discovery, dreamSkin, listed, injectorPathFreshness] = await Promise.all([
       (deps.discoverCodex ?? discoverCodex)(),
       (deps.detectDreamSkinRuntime ?? detectDreamSkinRuntime)(),
-      deps.listThemes({ roots, preferRoot: deps.userThemesRoot, dedupe: true }),
+      // includeSkipped for observability only; list/apply still use default array shape.
+      deps.listThemes({
+        roots,
+        preferRoot: deps.userThemesRoot,
+        dedupe: true,
+        includeSkipped: true,
+      }),
       inspectInjectorPathFreshness({
         installRoot: deps.installRoot,
         stateRoot: deps.dreamStateRoot,
       }),
     ]);
+    const themes = Array.isArray(listed) ? listed : listed.themes;
+    const skippedThemeCount = Array.isArray(listed)
+      ? 0
+      : Array.isArray(listed.skipped)
+        ? listed.skipped.length
+        : 0;
     const runtime = await (deps.runtimeDiagnostics ?? runtimeDiagnostics)({
       appPath: discovery.app,
       port: requestedPort,
@@ -269,6 +281,7 @@ export async function runCli(argv, overrides = {}) {
       dreamSkin,
       themeCount: themes.length,
       userThemeCount,
+      skippedThemeCount,
       injectorPathFreshness,
       dailyEntry: "CodexDreamSkin（任务栏 Codex）",
       diagnosis: [

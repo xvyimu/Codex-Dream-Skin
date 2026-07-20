@@ -4,12 +4,25 @@
 
 ## 每次发版前
 
-- [ ] `npm test`（themes + deps + freshness）
+- [ ] `npm test`（themes + store + adapter + deps + freshness）
 - [ ] 若改 `packages/runtime/**`：`pwsh scripts/windows/publish-runtime.ps1 -Version <line>`
 - [ ] `pwsh scripts/windows/verify-install-matches-repo.ps1 -RepoRoot <repo>` → exit 0
 - [ ] `node packages/core/cli.mjs doctor` → `injectorPathFreshness.fresh=true`
-- [ ] 可选：PROJECT §9.4 probe 表（home + conversation；**不进 CI**）
+- [ ] 可选 probe：见下节 home / conversation（**不进 CI**）
 - [ ] 若改 control-plane token：`npm run test:control`（本机 loopback）
+- [ ] 可选 TD-02 摘要演练：`pwsh -NoProfile -File scripts/windows/verify-post-update-failure-summary.ps1` → exit 0
+
+## 可选 probe（不进 CI；详表 PROJECT §9.4）
+
+前置：任务栏 Codex、CDP 9335、皮肤已注入。
+
+- [ ] **home**：`node scripts\windows\probe-session-dom.mjs`  
+  期望 JSON 关键字：`"ok": true`、`"dreamStyle": true`、`"pass": true`；exit 0  
+  （无 page → exit 2）
+- [ ] **conversation**：打开任一对话后 **再跑同上**  
+  期望：`"conversationPass": true`；exit 0（失败 exit 3）
+
+完整命令与安装树路径见 [PROJECT.md §9.4](./PROJECT.md)。
 
 ## 说明
 

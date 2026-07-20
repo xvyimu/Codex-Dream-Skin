@@ -1,43 +1,69 @@
 # codex-skin
 
-Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题引擎。Node ≥20，ESM。
+Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题。Node ≥20，ESM。  
+仓：`D:\orca\codex-skin` · 安装态：`%LOCALAPPDATA%\Programs\CodexDreamSkin`
+
+## 先读
+
+1. [`docs/PROJECT.md`](docs/PROJECT.md) — 边界、分层、禁止依赖、验收  
+2. 改功能：[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) §C-1 / §C-8  
+3. 实现映射：[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ## 结构
 
 | 路径 | 职责 |
 |------|------|
-| `packages/core/` | CLI + CDP/发现/状态（跨平台逻辑） |
-| `packages/core-win/` | Windows PowerShell 运行时封装 |
-| `packages/runtime/` | 注入/元数据/控制面脚本 |
+| `packages/core/` | CLI + CDP/发现/状态 |
+| `packages/core-win/` | Windows pwsh 运行时封装 |
+| `packages/runtime/` | 注入/元数据/控制面 |
 | `packages/themes/` | 主题 schema / store / adapter |
-| `apps/launcher/` | 启动器、切换主题 UI、冒烟 |
-| `themes/` | 主题资源（`theme.json` + hero 图） |
-| `vendor/dreamskin/` | 上游 DreamSkin 脚本与资产 |
-| `docs/` | usage / ADR / 痛点 |
+| `apps/launcher/` | 启动器、切主题、冒烟 |
+| `themes/` | 主题资源 |
+| `vendor/dreamskin/` | 上游镜像（生产勿 import） |
+| `docs/` | PROJECT / ADR / 痛点 / 任务卡 |
 
-## 常用命令
+## 命令
 
 ```bash
-npm run doctor
-npm run list
-npm run status
-npm run help
+npm run doctor | list | status | help
 npm run test:themes
+npm run test:store
+npm run test:adapter
 npm run test:deps
-npm run test:control   # 本机 loopback；不进 CI
-npm test
-# 等价: node packages/core/cli.mjs <cmd>
+npm run test:freshness
+npm test                  # themes + store + adapter + deps + freshness
+npm run test:control      # 本机 loopback；不进 CI
+# node packages/core/cli.mjs <cmd>
 ```
 
-## 约定
+启动/发布脚本用 **pwsh**（`apps/launcher/*.ps1`、`publish-runtime.ps1`）。  
+若本机配置了 `rtk` 包装器可选用；**非**仓库硬依赖。
 
-- **先读** [`docs/PROJECT.md`](docs/PROJECT.md)：边界、分层、依赖禁止项、验收门禁、Agent 任务模板
-- **PR / 规范**：[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)（§C-1 模块依赖 7 问 · §C-8 禁止速查表）
-- **维护任务卡**：[`docs/plans/task-cards-2026-07-21.md`](docs/plans/task-cards-2026-07-21.md) · 提示词 [`docs/prompts/agent-maintain-task-cards-zh.md`](docs/prompts/agent-maintain-task-cards-zh.md)
-- 全面检查基线：[`docs/AUDIT-2026-07-20.md`](docs/AUDIT-2026-07-20.md)
-- 残差规划（CI / mac / #21 / Quiet）：[`docs/plans/residual-g1-g3-g4-g5-2026-07-20.md`](docs/plans/residual-g1-g3-g4-g5-2026-07-20.md)
-- 改主题：`themes/<id>/theme.json` + 资源；注册见 `packages/themes/`；改 schema 跑 `npm run test:themes`
-- Windows 启动路径优先 `apps/launcher/*.ps1`（用 **pwsh**）
-- 注入/CDP 相关改动先跑 `doctor` / 既有 smoke，勿盲改端口发现
-- 硬性禁止：`core ↔ runtime` 互依赖、第二**守护**路径、生产 import `vendor/`（kick 的 injector `--once` 单次降级除外，见 dual-open-policy）
-- 详见 `docs/ARCHITECTURE.md`、`docs/usage.md`、`docs/PAIN-POINTS.md`、`docs/adr/`
+## 不可谈判
+
+1. 单产品线、单 watch injector（禁止第二守护路径）  
+2. `packages/core` ↔ `packages/runtime` **禁止**双向依赖  
+3. 主题写入只经 `packages/themes` + `themes/<id>/`  
+4. 版本只认 `publish-runtime.ps1 -Version`（ADR 0003）；产品包只 stamp payload  
+5. 上游只 vendor + 人工 promote（ADR 0002）；生产禁止 import `vendor/`（kick `--once` 例外见 dual-open-policy）
+
+## 不要做
+
+- 不擅自 `git push` / 改 `main`  
+- 不把业务修复写进 `vendor/`  
+- 不新建第二套 injector/守护  
+- 不主动备份安装态/配置（除非用户要）  
+- 不扩 scope 到无关包
+
+## 完成标准（DoD）
+
+1. 相关测试：`npm test`（主题/依赖变更至少跑触及的 script）  
+2. 动到注入/CDP/启动：`npm run doctor` 或既有 smoke 说清结果  
+3. diff 小、可说明；残留风险一句
+
+## 工作约定
+
+- 改主题：`themes/<id>/theme.json` + 资源；改 schema → `npm run test:themes`  
+- 注入/CDP：先 doctor/smoke，勿盲改端口发现  
+- 维护卡：`docs/plans/` 下最新 task-cards  
+- 审计/残差/痛点：`docs/AUDIT-*.md` · `docs/plans/` · `docs/PAIN-POINTS.md`（以目录最新为准）

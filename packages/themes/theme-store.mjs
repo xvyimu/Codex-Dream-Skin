@@ -75,12 +75,26 @@ export async function createSingleImageTheme({ imagePath, name, storeRoot, color
  * - source 标签：preferRoot 命中 → user；路径匹配 CodexDreamSkin/themes → user；
  *   否则尾段 themes → bundled；其余 other（路径正则仅为 fallback）。
  * 形状守卫：缺 string id/name 的 manifest 直接跳过，避免 sort 对 undefined 崩。
+ * includeSkipped=true 时返回 { themes, skipped }；默认仍返回排序后的数组。
+ * ENOENT root 继续跳过，不记 skipped。
  *
- * @param {{ roots: string[], preferRoot?: string, dedupe?: boolean }} opts
+ * @param {{
+ *   roots: string[],
+ *   preferRoot?: string | null,
+ *   dedupe?: boolean,
+ *   includeSkipped?: boolean,
+ * }} opts
+ * @returns {Promise<Array | { themes: Array, skipped: { dir: string, reason: string }[] }>}
  */
-export async function listThemes({ roots, preferRoot = null, dedupe = true }) {
+export async function listThemes({
+  roots,
+  preferRoot = null,
+  dedupe = true,
+  includeSkipped = false,
+} = {}) {
   const themes = [];
   const byId = new Map();
+  const skipped = [];
   for (const root of roots) {
     let entries;
     try {
@@ -99,14 +113,20 @@ export async function listThemes({ roots, preferRoot = null, dedupe = true }) {
             : "other";
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
+      const dir = join(root, entry.name);
       try {
-        const manifest = JSON.parse(await readFile(join(root, entry.name, "theme.json"), "utf8"));
+        const manifest = JSON.parse(await readFile(join(dir, "theme.json"), "utf8"));
         // 形状守卫：合法 JSON 但缺 name/id 的坏主题不能进列表，
         // 否则后面 sort 的 a.name.localeCompare 会因 undefined 崩掉整个 list/apply
-        if (typeof manifest?.id !== "string" || typeof manifest?.name !== "string") continue;
+        if (typeof manifest?.id !== "string" || typeof manifest?.name !== "string") {
+          if (includeSkipped) {
+            skipped.push({ dir, reason: "missing-id-or-name" });
+          }
+          continue;
+        }
         const item = {
           ...manifest,
-          path: join(root, entry.name),
+          path: dir,
           source,
           root,
         };
@@ -116,11 +136,22 @@ export async function listThemes({ roots, preferRoot = null, dedupe = true }) {
         }
         // Later roots override earlier ones (user store after bundled).
         byId.set(manifest.id, item);
-      } catch {
-        // A half-copied folder is ignored so listing remains fast and useful.
+      } catch (error) {
+        // Half-copied / invalid folders stay out of the default list.
+        if (includeSkipped) {
+          const message = error?.message ? String(error.message) : String(error);
+          const reason =
+            error instanceof SyntaxError || /JSON/i.test(message)
+              ? "invalid-json"
+              : message.slice(0, 120) || "load-failed";
+          skipped.push({ dir, reason });
+        }
       }
     }
   }
-  const list = dedupe ? [...byId.values()] : themes;
-  return list.sort((a, b) => a.name.localeCompare(b.name));
+  const list = (dedupe ? [...byId.values()] : themes).sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+  if (includeSkipped) return { themes: list, skipped };
+  return list;
 }

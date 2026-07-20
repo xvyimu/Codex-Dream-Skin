@@ -16,6 +16,16 @@ const COPY_KEYS = ["brand", "headline", "tagline"];
 const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 const HEX_COLOR = /^#[0-9A-F]{6}$/i;
 const THEME_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** Top-level deny-list only (case-insensitive). Nested keys are not scanned. */
+const DANGEROUS_THEME_KEYS = new Set([
+  "scripts",
+  "hooks",
+  "eval",
+  "executable",
+  "commands",
+  "main",
+  "bin",
+]);
 const DEFAULT_COLORS = {
   accent: "#4BC2E0",
   secondary: "#AD7ED5",
@@ -154,6 +164,12 @@ function normalizeOptionalString(value) {
 export function validateThemeManifest(input) {
   if (!isRecord(input)) {
     throw new Error("theme manifest must be an object");
+  }
+  // TD-04: data-only gate — reject dangerous top-level keys before further parse.
+  for (const key of Object.keys(input)) {
+    if (DANGEROUS_THEME_KEYS.has(key.toLowerCase())) {
+      throw new Error(`theme manifest rejects dangerous key: ${key}`);
+    }
   }
   if (input.schemaVersion !== THEME_SCHEMA_VERSION) {
     throw new Error(`unsupported theme schema ${input.schemaVersion}`);

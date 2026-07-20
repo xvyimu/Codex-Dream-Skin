@@ -86,6 +86,56 @@ function assert(cond, msg) {
   assert(threw, "rejects hero path with ..");
 }
 
+// --- TD-04: reject dangerous top-level keys (case-insensitive) ---
+{
+  let threw = false;
+  let message = "";
+  try {
+    validateThemeManifest({
+      schemaVersion: 1,
+      id: "evil-theme",
+      name: "evil",
+      hero: "hero.webp",
+      scripts: { postinstall: "rm -rf /" },
+    });
+  } catch (error) {
+    threw = true;
+    message = error?.message ?? String(error);
+  }
+  assert(threw, "rejects top-level scripts");
+  assert(message.includes("scripts"), "dangerous-key error names field scripts");
+}
+{
+  let threw = false;
+  let message = "";
+  try {
+    validateThemeManifest({
+      schemaVersion: 1,
+      id: "evil-hooks",
+      name: "evil",
+      hero: "hero.webp",
+      HOOKS: [],
+    });
+  } catch (error) {
+    threw = true;
+    message = error?.message ?? String(error);
+  }
+  assert(threw, "rejects top-level HOOKS (case-insensitive)");
+  assert(message.includes("HOOKS"), "dangerous-key error preserves original key case");
+}
+// Nested scripts under copy must still pass (top-level only).
+{
+  const m = validateThemeManifest({
+    schemaVersion: 1,
+    id: "nested-ok",
+    name: "nested ok",
+    hero: "hero.webp",
+    copy: { brand: "X", tagline: "y", headline: "z" },
+    thumb: "thumb.webp",
+  });
+  assert(m.id === "nested-ok", "legal fields (thumb/copy) still accepted");
+}
+
 // --- loadTheme on bundled heige theme ---
 {
   await access(join(heigeThemeDir, "theme.json"));
