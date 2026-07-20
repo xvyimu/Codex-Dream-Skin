@@ -32,8 +32,15 @@ namespace CodexSkin.FastLaunch {
     private const int HEALTH_TIMEOUT_MS = 400;
     private const int FOCUS_BUDGET_MS = 900;
 
+    // 与 Store 包 OpenAI.Codex_...!App 刻意不同。任务栏若仍按 Store AUMID 分组/启动，
+    // 会绕过本 exe 直接 package activation，表现为"点任务栏还是卡死"。
+    private const string APP_USER_MODEL_ID = "CodexDreamSkin.FastLaunch";
+
     [STAThread]
     private static int Main(string[] args) {
+      // 必须在任何窗口/壳交互前设置，否则任务栏仍可能按 Store AUMID 归组。
+      try { SetCurrentProcessExplicitAppUserModelID(APP_USER_MODEL_ID); } catch {}
+
       // Diagnostic log lives next to state.json so post-mortem is easy without a console.
       string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
       string stateRoot = Path.Combine(localAppData, "CodexDreamSkin");
@@ -289,5 +296,7 @@ namespace CodexSkin.FastLaunch {
     [DllImport("user32.dll")] private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
     [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
     [DllImport("user32.dll")] private static extern bool AllowSetForegroundWindow(int dwProcessId);
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern int SetCurrentProcessExplicitAppUserModelID(string AppID);
   }
 }
