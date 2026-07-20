@@ -5,13 +5,16 @@
 
 .DESCRIPTION
   Produces dist/CodexDreamSkin-<version>-win-x64/ with:
-    Install.ps1
-    Uninstall.ps1
-    README.txt
-    package-meta.json
-    payload/ ...
+    Install.ps1 / Uninstall.ps1 / README.txt / package-meta.json / payload/
 
-  Then zips it to dist/CodexDreamSkin-<version>-win-x64.zip
+  Version authority (ADR 0003):
+    1) -Version parameter (required if repo token is still __SKIN_VERSION__)
+    2) else stamped SKIN_VERSION_TOKEN already in packages/runtime (post-publish)
+  No silent default like "1.3.25".
+
+  Product package is a *distribution* path that copies already-stamped (or
+  -Version-stamped) runtime into a zip. Daily developer path remains
+  publish-runtime.ps1 -Version (sole write-back into the git tree).
 #>
 [CmdletBinding()]
 param(
@@ -28,20 +31,32 @@ try {
   $OutputEncoding = $utf8
 } catch {}
 
-if (-not $Version) {
-  # Prefer stamped runtime token, then current.json, then default
-  $inj = Join-Path $RepoRoot "packages\runtime\scripts\injector.mjs"
-  if (Test-Path -LiteralPath $inj) {
-    $m = Select-String -Path $inj -Pattern 'SKIN_VERSION_TOKEN = "([^"]+)"' | Select-Object -First 1
-    if ($m -and $m.Matches[0].Groups[1].Value -notmatch '^__') {
-      $Version = $m.Matches[0].Groups[1].Value
-    }
-  }
+function Get-StampedRuntimeToken([string]$Root) {
+  $inj = Join-Path $Root "packages\runtime\scripts\injector.mjs"
+  if (-not (Test-Path -LiteralPath $inj)) { return $null }
+  $m = Select-String -Path $inj -Pattern 'SKIN_VERSION_TOKEN = "([^"]+)"' | Select-Object -First 1
+  if (-not $m) { return $null }
+  $v = $m.Matches[0].Groups[1].Value
+  if ($v -match '^__') { return $null }
+  return $v
 }
-if (-not $Version) { $Version = "1.3.25" }
+
+if (-not $Version) {
+  $Version = Get-StampedRuntimeToken -Root $RepoRoot
+}
+if (-not $Version) {
+  throw @"
+Version required (ADR 0003).
+  Pass -Version x.y.z
+  OR publish first so packages/runtime SKIN_VERSION_TOKEN is stamped (not __SKIN_VERSION__).
+"@
+}
+if ($Version -notmatch '^\d+\.\d+\.\d+') {
+  throw "Version must look like semver x.y.z (got: $Version)"
+}
+
 if (-not $OutDir) { $OutDir = Join-Path $RepoRoot "dist" }
 
-$stamp = Get-Date -Format "yyyyMMdd"
 $folderName = "CodexDreamSkin-$Version-win-x64"
 $stage = Join-Path $OutDir $folderName
 $payload = Join-Path $stage "payload"
@@ -66,7 +81,7 @@ Copy-Tree (Join-Path $RepoRoot "themes") (Join-Path $payload "themes")
 Copy-Tree (Join-Path $RepoRoot "packages\core") (Join-Path $payload "packages\core")
 Copy-Tree (Join-Path $RepoRoot "packages\themes") (Join-Path $payload "packages\themes")
 
-# Tools
+# Tools + VBS entry helpers (#18 Codex 换肤 needs launch-switch-theme.vbs)
 $tools = Join-Path $payload "tools"
 New-Item -ItemType Directory -Force -Path $tools | Out-Null
 foreach ($name in @(
@@ -74,10 +89,27 @@ foreach ($name in @(
   "install-ux-shortcuts.ps1",
   "generate-theme-thumbs.ps1",
   "probe-session-dom.mjs",
-  "import-themes.ps1"
+  "import-themes.ps1",
+  "launch-switch-theme.vbs",
+  "launch-codex-skin.vbs",
+  "launch-switch-theme.js"
 )) {
   $src = Join-Path $RepoRoot ("scripts\windows\" + $name)
   if (Test-Path -LiteralPath $src) { Copy-Item $src (Join-Path $tools $name) -Force }
+}
+
+# User-facing usage doc for install-ux "使用说明" shortcut
+# Use codepoint labels so Windows PowerShell 5.1 (often GBK source decode) does not mojibake filenames.
+$docsDir = Join-Path $payload "docs"
+New-Item -ItemType Directory -Force -Path $docsDir | Out-Null
+$usageSrc = Join-Path $RepoRoot "docs\usage.md"
+$usageCnName = -join ([char]0x4F7F, [char]0x7528, [char]0x8BF4, [char]0x660E) + ".md" # 使用说明.md
+if (Test-Path -LiteralPath $usageSrc) {
+  Copy-Item $usageSrc (Join-Path $docsDir "usage.md") -Force
+  Copy-Item $usageSrc (Join-Path $docsDir $usageCnName) -Force
+  Write-Host ("  + docs/usage.md + docs/" + $usageCnName)
+} else {
+  Write-Warning "docs/usage.md missing — install-ux usage shortcut will skip"
 }
 
 # Native exe if built
@@ -85,7 +117,6 @@ $nativeSrc = Join-Path $RepoRoot "apps\native\CodexFastLaunch\bin\CodexFastLaunc
 $nativeDstDir = Join-Path $payload "native"
 New-Item -ItemType Directory -Force -Path $nativeDstDir | Out-Null
 if (-not (Test-Path -LiteralPath $nativeSrc)) {
-  # fall back to installed copy
   $installed = Join-Path $env:LOCALAPPDATA "Programs\CodexDreamSkin\CodexFastLaunch.exe"
   if (Test-Path -LiteralPath $installed) { $nativeSrc = $installed }
 }
@@ -96,10 +127,11 @@ if (Test-Path -LiteralPath $nativeSrc) {
   Write-Warning "CodexFastLaunch.exe missing — package will use PS open path"
 }
 
-# VERSION file in runtime for installer
+# VERSION file in runtime for installer (package authority inside the zip)
 Set-Content -Path (Join-Path $payload "runtime\VERSION") -Value $Version -Encoding ascii -NoNewline
 
-# Ensure SKIN_VERSION_TOKEN in payload is stamped (or leave as-is; Install stamps again)
+# Stamp SKIN_VERSION_TOKEN only inside the *package payload* (not the git tree).
+# Git tree write-back remains publish-runtime.ps1 exclusive (ADR 0003).
 foreach ($rel in @("runtime\scripts\injector.mjs", "runtime\assets\renderer-inject.js")) {
   $t = Join-Path $payload $rel
   if (-not (Test-Path -LiteralPath $t)) { continue }
@@ -125,6 +157,7 @@ $meta = [ordered]@{
   builtAt = (Get-Date).ToUniversalTime().ToString("o")
   sourceCommit = ""
   themeCount = @(Get-ChildItem (Join-Path $payload "themes") -Directory -ErrorAction SilentlyContinue).Count
+  versionAuthority = "Build-ProductPackage -Version or stamped runtime token; payload stamped only (git tree via publish-runtime.ps1)"
   requires = @("Windows 10/11", "Node.js >= 20 (for CLI)", "OpenAI Codex Store package")
 }
 try {
@@ -141,27 +174,33 @@ $readme = @"
 Codex Dream Skin $Version (Windows x64)
 ======================================
 
-一键安装（推荐）
-  右键 Install.ps1 → 使用 PowerShell 运行
-  或在终端：
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
+Install
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
 
-卸载
+Uninstall
   powershell -NoProfile -ExecutionPolicy Bypass -File .\Uninstall.ps1
+  (add -RemoveState to wipe user themes/active-theme)
 
-前提
-  - 已安装微软商店版 OpenAI Codex
-  - 本机有 Node.js 20+（用于导入主题 / apply / doctor）
+Prerequisites
+  - Microsoft Store OpenAI Codex
+  - Node.js 20+ (import-themes / apply / doctor)
 
-安装后
-  1. 点任务栏 / 开始菜单 Codex
-  2. 换肤：桌面「Codex 换肤」或 F6，或
+After install
+  1. Click taskbar / Start Menu Codex (CodexFastLaunch)
+  2. Switch theme: desktop "Codex 换肤" or F6
+  3. Tools: Start Menu -> Codex 工具 (repair / post-update / usage)
+  4. CLI:
      node "%LOCALAPPDATA%\Programs\CodexDreamSkin\cli\packages\core\cli.mjs" list
      node "...\cli.mjs" apply --theme genshin-night
 
-包内主题：约 $($meta.themeCount) 套（含 preset-arina-hashimoto）
-构建时间：$($meta.builtAt)
-提交：$($meta.sourceCommit)
+NOTE
+  Store tile bare launch cannot be rewritten (Windows package AUMID). Prefer the taskbar pin.
+  Version in this zip: $Version (package-meta + runtime/VERSION + stamped token in payload).
+  Developer publish path remains: publish-runtime.ps1 -Version (writes git tree).
+
+Themes: $($meta.themeCount)
+Built: $($meta.builtAt)
+Commit: $($meta.sourceCommit)
 "@
 [System.IO.File]::WriteAllText((Join-Path $stage "README.txt"), $readme, [System.Text.UTF8Encoding]::new($true))
 

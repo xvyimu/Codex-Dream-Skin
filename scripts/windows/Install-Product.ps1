@@ -268,6 +268,31 @@ $currentObj = [ordered]@{
 )
 Write-Host "current.json -> $runtimeId"
 
+# GC old versions: keep current + one previous (newest non-current)
+try {
+  $versionsDir = Join-Path $programRoot "versions"
+  if (Test-Path -LiteralPath $versionsDir) {
+    $keep = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    [void]$keep.Add($runtimeId)
+    $all = @(Get-ChildItem $versionsDir -Directory | Sort-Object LastWriteTime -Descending)
+    foreach ($dir in $all) {
+      if ($keep.Count -ge 2) { break }
+      [void]$keep.Add($dir.Name)
+    }
+    foreach ($dir in $all) {
+      if ($keep.Contains($dir.Name)) { continue }
+      try {
+        Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
+        Write-Host "GC removed old runtime $($dir.Name)"
+      } catch {
+        Write-Warning ("GC skip $($dir.Name): " + $_.Exception.Message)
+      }
+    }
+  }
+} catch {
+  Write-Warning ("GC versions failed: " + $_.Exception.Message)
+}
+
 # Import themes via CLI if node available
 if (-not $SkipImportThemes) {
   $node = $null
@@ -297,11 +322,65 @@ if (-not $SkipShortcuts) {
   }
 }
 
+# Soft reattach: if a watch injector is already running (or CDP is open),
+# flip it onto the just-installed runtime without the hang-prone check-and-fix path.
+try {
+  $nodeCmd = $null
+  try { $nodeCmd = (Get-Command node -ErrorAction Stop).Source } catch {}
+  $injPath = Join-Path $dest "scripts\injector.mjs"
+  if ($nodeCmd -and (Test-Path -LiteralPath $injPath)) {
+    $browserId = $null
+    $statePath = Join-Path $stateRoot "state.json"
+    if (Test-Path -LiteralPath $statePath) {
+      try {
+        $st = Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($st.browserId) { $browserId = [string]$st.browserId }
+      } catch {}
+    }
+    $oldInjectors = @(
+      Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -and ($_.CommandLine -match 'CodexDreamSkin\\versions\\.*injector\.mjs') }
+    )
+    $hadInjector = $oldInjectors.Count -gt 0
+    foreach ($proc in $oldInjectors) {
+      try {
+        Write-Host "Stopping old injector PID $($proc.ProcessId)"
+        Stop-Process -Id $proc.ProcessId -Force -ErrorAction SilentlyContinue
+      } catch {}
+    }
+    if ($hadInjector -or $browserId) {
+      $argList = @($injPath, "--watch", "--port", "9335")
+      if ($browserId) { $argList += @("--browser-id", $browserId) }
+      Write-Host "Starting watch injector on $runtimeId..."
+      $started = Start-Process -FilePath $nodeCmd -ArgumentList $argList -WindowStyle Hidden -PassThru
+      Start-Sleep -Milliseconds 800
+      if ($started -and -not $started.HasExited -and (Test-Path -LiteralPath $statePath)) {
+        try {
+          $st2 = Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json
+          $st2 | Add-Member -NotePropertyName injectorPid -NotePropertyValue $started.Id -Force
+          $st2 | Add-Member -NotePropertyName injectorPath -NotePropertyValue $injPath -Force
+          $st2 | Add-Member -NotePropertyName runtimeId -NotePropertyValue $runtimeId -Force
+          $st2 | Add-Member -NotePropertyName updatedAt -NotePropertyValue ((Get-Date).ToUniversalTime().ToString("o")) -Force
+          $json = ($st2 | ConvertTo-Json -Depth 8) + "`n"
+          [System.IO.File]::WriteAllText($statePath, $json, [System.Text.UTF8Encoding]::new($false))
+          Write-Host "Reattached injector PID=$($started.Id)"
+        } catch {
+          Write-Warning ("state patch after reattach: " + $_.Exception.Message)
+        }
+      }
+    } else {
+      Write-Host "No live injector/CDP session — click taskbar Codex after install to start watch."
+    }
+  }
+} catch {
+  Write-Warning ("soft reattach: " + $_.Exception.Message)
+}
+
 Write-Host ""
 Write-Host "Installed Codex Dream Skin $version ($runtimeId)"
 Write-Host "Next:"
 Write-Host "  1) Ensure OpenAI Codex (Store) is installed"
-Write-Host "  2) Click taskbar / Start Menu Codex"
+Write-Host "  2) Click taskbar / Start Menu Codex (if injector not already running)"
 Write-Host "  3) Optional: node `"$cliRoot\packages\core\cli.mjs`" apply --theme genshin-night"
 Write-Host "  4) Optional: node `"$cliRoot\packages\core\cli.mjs`" doctor"
 

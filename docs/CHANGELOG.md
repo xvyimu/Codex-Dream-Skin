@@ -27,9 +27,10 @@
 
 ### 产品包（终端用户分发）
 
-- **`Build-ProductPackage.ps1`** → `dist/CodexDreamSkin-<ver>-win-x64.zip`（~3.5MB，含 11 主题 + runtime + CLI + FastLaunch）。
-- **`Install.ps1` / `Uninstall.ps1`**：写 `Programs\CodexDreamSkin` + 导入主题 + 快捷方式；卸载默认可保留用户 catalog。
-- 结构验收：`STRUCTURAL_PASS`（Install/Uninstall/meta/injector/11 themes/native exe）。
+- **`Build-ProductPackage.ps1`** → `dist/CodexDreamSkin-<ver>-win-x64.zip`（~3.5MB，含 11 主题 + runtime + CLI + FastLaunch + usage 文档）。
+- **`Install.ps1` / `Uninstall.ps1`**：写 `Programs\CodexDreamSkin` + 导入主题 + 快捷方式；安装后 **soft reattach** 已运行 injector 到新 runtime + versions GC（current+上一版）；卸载默认可保留用户 catalog，清理 #18 布局快捷方式。
+- 版本权威：包内 stamp 不写回 git tree（ADR 0003）；`-Version` 或已 stamp 的 runtime token。
+- 验收：Install exit 0 · doctor fresh · package CLI apply kick ~80ms · STRUCTURAL_PASS。
 
 ## 1.3.24 — wait-shell cold-start + tray native focus + UTF-8 console
 

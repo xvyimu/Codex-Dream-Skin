@@ -8,6 +8,13 @@
   With -RemoveState also removes themes/active-theme/state under
   %LOCALAPPDATA%\CodexDreamSkin (user catalog is wiped).
   Does not uninstall OpenAI Codex.
+
+  Shortcut cleanup matches install-ux layout (#18):
+    daily Codex/ChatGPT/换肤 (desktop + Start Menu)
+    Start Menu "Codex 工具" folder
+    Startup auto-launch
+    legacy "Codex Skin 高级" / scattered repair entries
+  Does NOT remove Microsoft Store Codex tiles (OS package).
 #>
 [CmdletBinding()]
 param(
@@ -25,6 +32,16 @@ try {
 
 $programRoot = Join-Path $env:LOCALAPPDATA "Programs\CodexDreamSkin"
 $stateRoot = Join-Path $env:LOCALAPPDATA "CodexDreamSkin"
+$programs = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+$desktop = [Environment]::GetFolderPath("Desktop")
+$startup = Join-Path $programs "Startup"
+$taskbar = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+
+# Codepoint labels (PS 5.1 safe)
+$huanfu = -join ([char]0x6362, [char]0x80A4)
+$gongju = -join ([char]0x5DE5, [char]0x5177)
+$switchName = "Codex " + $huanfu
+$toolsName = "Codex " + $gongju
 
 Write-Host "Uninstall Codex Dream Skin"
 Write-Host "  program: $programRoot"
@@ -40,12 +57,11 @@ try {
     }
 } catch {}
 
-# Stop tray scripts that live under program root
+# Stop tray / open scripts under program root
 try {
   Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
     Where-Object { $_.CommandLine -match 'CodexDreamSkin\\.*(tray-dream-skin|open-codex-dream-skin|launcher-ui)' } |
     ForEach-Object {
-      # Do not kill the current uninstall shell
       if ($_.ProcessId -ne $PID) {
         Write-Host "Stopping PS PID $($_.ProcessId)"
         Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
@@ -53,23 +69,80 @@ try {
     }
 } catch {}
 
+# Stop native fast launch if still running
+try {
+  Get-Process -Name "CodexFastLaunch" -ErrorAction SilentlyContinue |
+    ForEach-Object {
+      Write-Host "Stopping CodexFastLaunch PID $($_.Id)"
+      Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+    }
+} catch {}
+
+function Remove-LinkIfExists([string]$Path) {
+  if (Test-Path -LiteralPath $Path) {
+    Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+    Write-Host "rm  $Path"
+  }
+}
+
 if (-not $KeepShortcuts) {
-  $targets = @(
-    (Join-Path ([Environment]::GetFolderPath("Desktop")) "Codex.lnk"),
-    (Join-Path ([Environment]::GetFolderPath("Desktop")) "Codex 换肤.lnk"),
-    (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Codex.lnk"),
-    (Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Codex 换肤.lnk")
+  $fileTargets = @(
+    (Join-Path $desktop "Codex.lnk"),
+    (Join-Path $desktop "ChatGPT.lnk"),
+    (Join-Path $desktop ($switchName + ".lnk")),
+    (Join-Path $desktop "Codex Skin.lnk"),
+    (Join-Path $programs "Codex.lnk"),
+    (Join-Path $programs "ChatGPT.lnk"),
+    (Join-Path $programs ($switchName + ".lnk")),
+    (Join-Path $programs "Codex Skin.lnk"),
+    (Join-Path $programs "Codex Skin 管理.lnk"),
+    (Join-Path $programs "Codex 皮肤修复.lnk"),
+    (Join-Path $programs "Codex 更新回归.lnk"),
+    (Join-Path $programs "Codex Skin 使用说明.lnk"),
+    (Join-Path $startup "Codex Dream Skin - Auto Launch.lnk")
   )
-  foreach ($t in $targets) {
-    if (Test-Path -LiteralPath $t) {
-      Remove-Item -LiteralPath $t -Force -ErrorAction SilentlyContinue
-      Write-Host "Removed shortcut $t"
+  foreach ($t in $fileTargets) { Remove-LinkIfExists $t }
+
+  # Taskbar pins: only remove if they still point at our FastLaunch / open script
+  if (Test-Path -LiteralPath $taskbar) {
+    $shell = New-Object -ComObject WScript.Shell
+    foreach ($name in @("Codex.lnk", "ChatGPT.lnk")) {
+      $p = Join-Path $taskbar $name
+      if (-not (Test-Path -LiteralPath $p)) { continue }
+      try {
+        $sc = $shell.CreateShortcut($p)
+        $tp = [string]$sc.TargetPath
+        $args = [string]$sc.Arguments
+        if ($tp -match 'CodexFastLaunch\.exe$' -or $args -match 'open-codex-dream-skin|CodexDreamSkin') {
+          Remove-LinkIfExists $p
+        }
+      } catch {
+        Write-Warning ("taskbar skip $name : " + $_.Exception.Message)
+      }
     }
   }
-  $adv = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Codex Skin 高级"
-  if (Test-Path -LiteralPath $adv) {
-    Remove-Item -LiteralPath $adv -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "Removed $adv"
+
+  # Tools folder (new) + legacy advanced folders
+  $dirTargets = @(
+    (Join-Path $programs $toolsName),
+    (Join-Path $programs "Codex Skin 高级"),
+    (Join-Path $programs "Codex 高级")
+  )
+  Get-ChildItem -LiteralPath $programs -Directory -ErrorAction SilentlyContinue |
+    Where-Object {
+      $_.Name -like "Codex Skin*" -or
+      $_.Name -eq $toolsName -or
+      ($_.Name -like "Codex *" -and $_.Name -match "高级|Advanced|工具")
+    } |
+    ForEach-Object {
+      Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+      Write-Host ("rmdir " + $_.Name)
+    }
+  foreach ($d in $dirTargets) {
+    if (Test-Path -LiteralPath $d) {
+      Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction SilentlyContinue
+      Write-Host "rmdir $d"
+    }
   }
 }
 
@@ -88,3 +161,4 @@ if ($RemoveState -and (Test-Path -LiteralPath $stateRoot)) {
 }
 
 Write-Host "Uninstall done. OpenAI Codex itself was not removed."
+Write-Host "Store tile (if any) is OS-owned and was not modified."
