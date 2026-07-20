@@ -7,6 +7,14 @@ Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName Microsoft.VisualBasic
 . (Join-Path $PSScriptRoot 'common-windows.ps1')
 . (Join-Path $PSScriptRoot 'theme-windows.ps1')
+# Optional: launcher-ui provides Repair-CodexSkinDisabledRenderWindows + WinFocus6.
+# Installed layouts also copy it to programRoot\lib\launcher-ui.ps1.
+foreach ($ui in @(
+  (Join-Path $PSScriptRoot 'launcher-ui.ps1'),
+  (Join-Path (Split-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -Parent) 'lib\launcher-ui.ps1')
+)) {
+  if (Test-Path -LiteralPath $ui) { . $ui; break }
+}
 
 Assert-DreamSkinPort -Port $Port
 $SkillRoot = Split-Path -Parent $PSScriptRoot
@@ -458,6 +466,17 @@ try {
   $healthTimer.add_Tick({
     try {
       [void](Update-DreamSkinTrayTip -NotifyBare)
+      # Patrol: re-enable disabled Electron Intermediate D3D child so the page
+      # does not stay foregrounded-but-unclickable. Cheap EnumChildWindows only.
+      try {
+        if (Get-Command Repair-CodexSkinDisabledRenderWindows -ErrorAction SilentlyContinue) {
+          [void](Repair-CodexSkinDisabledRenderWindows)
+        } elseif (Get-Command Ensure-CodexSkinFocusType -ErrorAction SilentlyContinue) {
+          Ensure-CodexSkinFocusType
+          $cg = Get-Process -Name ChatGPT -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+          if ($cg) { [CodexSkin.WinFocus6]::EnableDisabledRenderChildren([IntPtr]$cg.MainWindowHandle) }
+        }
+      } catch {}
       # Runtime pointer changed after publish: replace tray quietly with new script.
       if (Test-DreamSkinTrayRuntimeChanged) {
         $notify.Visible = $false

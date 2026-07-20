@@ -690,6 +690,51 @@ function Focus-CodexSkinWindow {
   return $false
 }
 
+function Repair-CodexSkinDisabledRenderWindows {
+  <#
+  .SYNOPSIS
+    Re-enable disabled Electron render children (Intermediate D3D Window).
+  .DESCRIPTION
+    Whole-page unclickable freeze: top-level window is fine, but Chromium's
+    Intermediate D3D Window child is IsWindowEnabled=false so input never
+    reaches the page. Safe to call periodically from tray health timer.
+  .OUTPUTS
+    int — number of top-level windows whose children were repaired (best-effort 0/1)
+  #>
+  param(
+    [object]$Codex = $null,
+    [scriptblock]$PathEqual = $null
+  )
+  try {
+    Ensure-CodexSkinFocusType
+    if (-not $Codex) {
+      # Best-effort without full codex discovery: use process names only.
+      $pids = New-Object 'System.Collections.Generic.HashSet[uint32]'
+      foreach ($name in @('ChatGPT', 'Codex')) {
+        Get-Process -Name $name -ErrorAction SilentlyContinue | ForEach-Object {
+          try { [void]$pids.Add([uint32]$_.Id) } catch {}
+        }
+      }
+    } else {
+      $pids = Get-CodexSkinProcessIdSet -Codex $Codex -PathEqual $PathEqual
+    }
+    if ($pids.Count -eq 0) { return 0 }
+    $hits = [CodexSkin.WinFocus6]::FindWindows($pids)
+    $fixed = 0
+    foreach ($hit in $hits) {
+      try {
+        [CodexSkin.WinFocus6]::EnableDisabledRenderChildren($hit.Hwnd)
+        $fixed += 1
+        # only need the highest-scoring main window
+        break
+      } catch {}
+    }
+    return $fixed
+  } catch {
+    return 0
+  }
+}
+
 function Invoke-CodexSkinControl {
   <#
   .SYNOPSIS
