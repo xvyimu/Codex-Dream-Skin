@@ -6,7 +6,8 @@
 > **doctor 摘要**：`ok` · `injectorAlive` pid 38880 · `fresh=true` · CDP 9335 · control 9336 · 11 themes · active 用户 catalog 齐全  
 > **审查人角色**：外部审查与优化顾问 Agent（只读；不改业务代码）  
 > **对照基线**：[`AUDIT-2026-07-20.md`](./AUDIT-2026-07-20.md) @ `f373fcb` · residual [`G1-B/G3-A/G4-A/G5-C`](./plans/residual-g1-g3-g4-g5-2026-07-20.md) **已完成**  
-> **落地状态（同日后续）**：**SEC-01 · TEST-02 · ARCH-01/03 soft-reattach · SCR-01 · CODE-02 · doctor 字段 · injector `--state-root` · `test:deps` CI** 已实现（见仓库 diff / AUDIT §16）。下列 §0「最严重问题」保留为扫描当时证据；实现以代码为准。
+> **落地状态（同日后续）**：**SEC-01 · TEST-02 · ARCH-01/03 soft-reattach · SCR-01 · CODE-02 · doctor 字段 · injector `--state-root` · `test:deps` CI** 已实现（见仓库 diff / AUDIT §16）。下列 §0「最严重问题」保留为扫描当时证据；实现以代码为准。  
+> **当前基线校准**（2026-07-21 · DOC-01）：HEAD=`c390d4e` · runtimeId=`1.3.25-107b0e` · 见文末修订记录
 
 ---
 
@@ -617,3 +618,13 @@ active-theme · runtimeId · SKIN_VERSION_TOKEN · kick · soft reattach · cata
 ---
 
 *本报告只读扫描交付；未修改业务注入路径。提示词模板见 `docs/prompts/agent-full-project-scan-zh.md`（若未提交则为本地 untracked）。*
+
+---
+
+## 修订记录
+
+| 日期 | HEAD | runtimeId | 说明 |
+|------|------|-----------|------|
+| 2026-07-20 | `ea229b7` | `1.3.25-d14cf4` | 扫描当时基线（正文证据保留） |
+| 2026-07-20 后 | → `c390d4e` | `1.3.25-107b0e` | SEC-01 / soft-reattach / test:deps 等落地（见 AUDIT §16） |
+| 2026-07-21 · DOC-01 | `c390d4e` | `1.3.25-107b0e` | 文档基线校准；CONTRIBUTING + task-cards 入库 |

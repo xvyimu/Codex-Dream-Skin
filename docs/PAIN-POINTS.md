@@ -43,6 +43,7 @@
 | 21 | 商店磁贴/AUMID/Codex-X 仍可能裸启 | 1.3.2 | 已知硬限 · 文档化；FastLaunch 独立 AUMID；日常钉任务栏 Codex（见 usage / dual-open-policy） |
 | 22 | 控制台中文乱码（GBK 工具链） | 1.3.2 | 已修 · `Initialize-CodexSkinConsoleUtf8` + 入口 chcp 65001 / UTF-8 OutputEncoding |
 | 23 | verify 对 chat bubble 选择器 `data-user-message-bubble` not found | 1.3.2 | 已修 · 多 fallback + conversationOk；真会话 verify 通过 |
+| 24 | 首次运行 SmartScreen 拦截未签名入口 / FastLaunch | 1.3.25 | **已知** · 未 OV 签名；用户点「更多信息 → 仍要运行」；签名属 P3 长期规划（见 usage） |
 
 ---
 
@@ -59,8 +60,15 @@
 
 ---
 
+## 安全审计摘记
+
+| ID | 日期 | 结论 |
+|----|------|------|
+| **SEC-02** | 2026-07-21 | 已审计：`Write-CodexSkinLog` / control-plane `console.error` / kick-inject 路径**未**把 `control.token` 明文写入日志；token 仅作 header/内存比较。health 仅回传 `tokenPresent` 布尔。 |
+
 ## 相关文档
 
 - 修复时间线：见 `CHANGELOG.md`（release-1.3.1 ~ 1.3.13 合集）
 - E2E 复测脚本：`scripts/windows/e2e-pain-test.ps1`
 - 原始 JSON 报告落点：`%LOCALAPPDATA%\CodexDreamSkin\e2e-pain-report.json`
+- 贡献规范：`docs/CONTRIBUTING.md` · 任务卡：`docs/plans/task-cards-2026-07-21.md`

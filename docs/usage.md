@@ -29,6 +29,15 @@
 
 重复的「Codex Skin」入口、旧「Codex Skin 高级」文件夹、散落的「管理 / 更新回归」会在 `install-ux-shortcuts.ps1` 里清掉。
 
+### 首次运行若遇 SmartScreen（PAIN #24）
+
+本产品入口 / `CodexFastLaunch.exe` **未做 OV 代码签名**。Windows 可能弹出「Windows 保护了你的电脑」：
+
+1. 点 **更多信息**  
+2. 再点 **仍要运行**  
+
+这是预期摩擦，不是安装失败。长期若评估 OV 证书签名，见 [`PAIN-POINTS.md`](./PAIN-POINTS.md) #24（P3，非本版交付）。
+
 ### 不要用微软商店磁贴开 Codex（PAIN #21 · 不是 bug）
 
 商店磁贴 / 包 AUMID（`OpenAI.Codex_...!App`）走 **package activation**，**无法**被本产品改写成带 CDP 的入口——这是 **Windows OS 硬限**。  

@@ -84,12 +84,27 @@ powershell -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\codex-ski
 1. 点任务栏 **Codex**（启动器 + watch injector）
 2. 换肤走统一 CLI `apply --theme` 或托盘「换肤…」 / F6
 
+## 已知债务
+
+### common-windows.ps1 函数命名冻结表（WIN-02）
+
+`packages/core-win/common-windows.ps1` 保留 30+ 个 `Verb-DreamSkinNoun` 函数为**冻结表**，不可批量重命名（apps/launcher · core-win · scripts/windows 多处 dot-source，回归面大）。示例：
+
+- `Enter-DreamSkinOperationLock` / `Exit-DreamSkinOperationLock`
+- `Get-DreamSkinNodeRuntime` / `Get-DreamSkinCodexInstall`
+- `Stop-DreamSkinTrayProcess` / `Invoke-DreamSkinNative`
+
+**新增函数**必须用 `Verb-CodexSkinNoun` 前缀（见 [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) §C-5）。
+
 ## 文档
 
 - [`PROJECT.md`](docs/PROJECT.md) — **项目总纲**（边界 · 分层 · 模块契约 · 验收 · 路线图；Agent 先读）
+- [`CONTRIBUTING.md`](docs/CONTRIBUTING.md) — **贡献规范**（PR 必答 7 问 · 主题/runtime/publish 验收 · 禁止事项）
 - [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) — 目录 · 边界 · 调用链 · 源码映射
 - [`AUDIT-2026-07-20.md`](docs/AUDIT-2026-07-20.md) — 全面检查报告（规范 · 模块 · 前后端映射 · 发现项）
 - [`plans/residual-g1-g3-g4-g5-2026-07-20.md`](docs/plans/residual-g1-g3-g4-g5-2026-07-20.md) — 残差 G1/G3/G4/G5 多方案对比与推荐
+- [`plans/task-cards-2026-07-21.md`](docs/plans/task-cards-2026-07-21.md) — 维护任务卡（P1–P3）
+- [`prompts/agent-maintain-task-cards-zh.md`](docs/prompts/agent-maintain-task-cards-zh.md) — 维护 Agent 可粘贴提示词
 - [`CHANGELOG.md`](docs/CHANGELOG.md) — 版本时间线
 - [`PAIN-POINTS.md`](docs/PAIN-POINTS.md) — 痛点合集与状态
 - [`usage.md`](docs/usage.md) — 使用说明

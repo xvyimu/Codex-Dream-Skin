@@ -32,6 +32,9 @@
 | [`GLOSSARY.md`](./GLOSSARY.md) | 领域术语 |
 | [`usage.md`](./usage.md) | 用户侧使用说明 |
 | [`dual-open-policy.md`](./dual-open-policy.md) | 入口纪律与 kick 降级 |
+| [`CONTRIBUTING.md`](./CONTRIBUTING.md) | PR 必答 7 问 · 8 类规范 · 禁止事项速查表 |
+| [`plans/task-cards-2026-07-21.md`](./plans/task-cards-2026-07-21.md) | 维护任务卡（P1–P3） |
+| [`prompts/agent-maintain-task-cards-zh.md`](./prompts/agent-maintain-task-cards-zh.md) | 维护 Agent 可粘贴提示词 |
 | [`adr/`](./adr/) | 架构决策（0001 合并 · 0002 上游 · 0003 版本源） |
 | 根目录 `CLAUDE.md` | Agent 短索引 |
 
@@ -585,3 +588,10 @@ codex-skin/
 | 0001 | 合并 DreamSkin 与 heige 为一条产品线 | Accepted |
 | 0002 | 上游同步策略 | Accepted |
 | 0003 | 单一版本源 | Accepted · 1.3.16 起实施 |
+
+## 附录 D · 贡献规范与任务卡
+
+PR / 模块依赖 / 主题·runtime·publish 验收 / 命名 / 小步提交 / `--once` / 禁止事项：见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)（§C-1–C-9）。
+
+维护 backlog 任务卡：[`plans/task-cards-2026-07-21.md`](./plans/task-cards-2026-07-21.md)。  
+维护 Agent 提示词：[`prompts/agent-maintain-task-cards-zh.md`](./prompts/agent-maintain-task-cards-zh.md)。

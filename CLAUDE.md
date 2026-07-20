@@ -31,6 +31,8 @@ npm test
 ## 约定
 
 - **先读** [`docs/PROJECT.md`](docs/PROJECT.md)：边界、分层、依赖禁止项、验收门禁、Agent 任务模板
+- **PR / 规范**：[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)（§C-1 模块依赖 7 问 · §C-8 禁止速查表）
+- **维护任务卡**：[`docs/plans/task-cards-2026-07-21.md`](docs/plans/task-cards-2026-07-21.md) · 提示词 [`docs/prompts/agent-maintain-task-cards-zh.md`](docs/prompts/agent-maintain-task-cards-zh.md)
 - 全面检查基线：[`docs/AUDIT-2026-07-20.md`](docs/AUDIT-2026-07-20.md)
 - 残差规划（CI / mac / #21 / Quiet）：[`docs/plans/residual-g1-g3-g4-g5-2026-07-20.md`](docs/plans/residual-g1-g3-g4-g5-2026-07-20.md)
 - 改主题：`themes/<id>/theme.json` + 资源；注册见 `packages/themes/`；改 schema 跑 `npm run test:themes`
