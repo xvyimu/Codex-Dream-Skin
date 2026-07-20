@@ -644,7 +644,7 @@ doctor 已暴露 `stateSchema` 顶层字段以降低误用（E1）。
 | TD-05 | adapter/writeActiveTheme 单测 | P2 | 测试 | 纯临时目录 |
 | TD-06 | DOM probe 发版勾选纪律 | P2 | 质量 | M3 |
 | TD-07 | injector 纯函数继续抽测 | P2 | 可维护 | 不拆文件 |
-| TD-08 | 上游双周 sync | P3 | 内容 | ADR 0002 节奏 |
+| TD-08 | 上游双周 sync | P3 | 内容 | **已跑 2026-07-21**：仍 `e776fa6`；runtime≠vendor 有意不 promote · 见 `docs/upstream-sync.json` |
 | TD-09 | Authenticode 评估 | P3 | 信任 | #24 |
 | TD-10 | 公开 LICENSE/NOTICE 呈现 | P3 | 开源卫生 | 与法务/个人意愿 |
 | TD-11 | schema 常量重命名 | P3 | 认知 | STATE_SCHEMA_NODE_MARKER |

@@ -470,7 +470,7 @@ paused/locked: false（正常使用时）
 
 - `main` 与上游 **零共同历史**（重构 force-push 后），禁止幻想 `git merge upstream/main`。  
 - 吸收通道仅：**视觉资产文件级** + **PS 修复人工移植**（ADR 0002）。  
-- 基线：`docs/upstream-sync.json` → `lastSyncedUpstreamSha`（当前 `e776fa6`）。  
+- 基线：`docs/upstream-sync.json` → `lastSyncedUpstreamSha`（当前 `e776fa6`；**2026-07-21 D-sync 已复跑**：上游无新提交；runtime 资产与 vendor **有意分叉**，勿盲 promote，见 JSON `note`）。  
 
 ---
 
