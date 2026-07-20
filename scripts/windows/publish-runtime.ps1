@@ -1,4 +1,4 @@
-# Publish codex-skin runtime into Programs\CodexDreamSkin\versions\<id>
+﻿# Publish codex-skin runtime into Programs\CodexDreamSkin\versions\<id>
 # and flip current.json. Does not rewrite Start Menu (already points at open-*.ps1).
 param(
   [string]$RepoRoot = (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent),
@@ -102,8 +102,9 @@ foreach ($name in @("launch-codex-skin.vbs","launch-switch-theme.vbs","install-a
   }
 }
 
-# Native fast launcher (CodexFastLaunch.exe) — rebuild if source present, then install to programRoot.
-# 这是任务栏 Codex.lnk 的正式入口；控制面 /health 命中时冷启 ~100ms。
+# Native fast launcher (CodexFastLaunch.exe): rebuild if source present, install to programRoot.
+# Taskbar Codex.lnk primary entry; /health hit path is ~100ms cold start.
+# Keep this block ASCII-only: Windows PowerShell 5.1 mis-parses UTF-8 (no BOM) Chinese comments.
 try {
   $nativeDir = Join-Path $RepoRoot 'apps\native\CodexFastLaunch'
   $nativeSrc = Join-Path $nativeDir 'CodexFastLaunch.cs'

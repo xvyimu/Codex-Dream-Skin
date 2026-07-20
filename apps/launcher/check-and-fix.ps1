@@ -20,6 +20,18 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# 与 open/post-update 同：防 pwsh 父进程污染 PS 5.1 的 Microsoft.PowerShell.Security
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+  $ps5Modules = @(
+    (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'WindowsPowerShell\Modules'),
+    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
+    (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\Modules')
+  )
+  $env:PSModulePath = ($ps5Modules -join ';')
+  try { Import-Module Microsoft.PowerShell.Security -ErrorAction Stop } catch {}
+}
+
 $programRoot = [System.IO.Path]::GetFullPath($PSScriptRoot)
 $stateRoot = Join-Path $env:LOCALAPPDATA 'CodexDreamSkin'
 $logPath = Join-Path $stateRoot 'check-and-fix.log'

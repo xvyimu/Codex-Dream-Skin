@@ -88,7 +88,7 @@ export function focusViaPowerShell({ timeoutMs = 600, focusScriptPath = null } =
           child.kill();
         } catch {}
         resolve({ focused: false, ms: Date.now() - sw, detail: "focus-timeout" });
-      }, Math.max(1200, timeoutMs + 600));
+      }, Math.max(800, timeoutMs + 300));
       child.stdout.on("data", (c) => {
         out += String(c);
       });
@@ -195,14 +195,21 @@ export async function startControlPlane(opts) {
         if (!health?.healthy) {
           return send(409, { ok: false, reason: "unhealthy", ...health });
         }
-        const focus = opts.onFocus
-          ? await opts.onFocus()
-          : await focusViaPowerShell();
+        // 不阻塞等 focus：旧实现 await focusViaPowerShell() 会冷启 PS +
+        // Focus-CodexSkinWindow，最差 Math.max(1200, timeout+600)ms，把
+        // open-healthy 调用方（含 VBS / open.ps1 TimeoutMs=200）拖成"卡死"。
+        // 这里立即返回 healthy；焦点由调用方（native exe / 自身 focus）负责，
+        // 另起 fire-and-forget 一次 best-effort focus 不拖 HTTP。
+        const focusJob = opts.onFocus
+          ? opts.onFocus()
+          : focusViaPowerShell({ timeoutMs: 400 });
+        // 不等待；吞掉 rejection，避免 unhandledRejection
+        Promise.resolve(focusJob).catch(() => {});
         return send(200, {
           ok: true,
           healthy: true,
-          focused: Boolean(focus?.focused),
-          focus,
+          focused: false,
+          focus: { focused: false, ms: 0, detail: "async" },
           ...health,
         });
       }
