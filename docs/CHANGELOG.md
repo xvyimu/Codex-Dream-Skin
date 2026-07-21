@@ -22,8 +22,14 @@
 
 ### 工程 / U1（ADR 0004）
 
-- **themes ↔ contracts 对齐（feature/u1-themes-contracts-align）**：新增 `packages/themes/theme-contracts-align.test.mjs` + `npm run test:themes-contracts`（自带 `build:contracts`）。把 `validateThemeManifest`/`normalizeColors` 四色输出喂进 `@codex-skin/contracts` 的 `parsePaletteWithSurface`，内置主题全量交叉；`CSS_COLOR_RE` 对 **injector.mjs 源文件** 抓取的 `cssColor` 正则做同源断言（不写第三份字面量）。负例/schema 规模仍由 `test:contracts` / `test:themes` 承担。
+- **themes ↔ contracts 对齐**（PR #12）：`packages/themes/theme-contracts-align.test.mjs` + `npm run test:themes-contracts`（自带 `build:contracts`）。把 `validateThemeManifest`/`normalizeColors` 四色输出喂进 `@codex-skin/contracts` 的 `parsePaletteWithSurface`，内置主题全量交叉；`CSS_COLOR_RE` 对 **injector.mjs 源文件** 抓取的 `cssColor` 正则做同源断言（不写第三份字面量）。负例/schema 规模仍由 `test:contracts` / `test:themes` 承担。
 - **硬边界**：themes 仍不静态 import contracts（zod 属开发平面，不进 `versions/<id>/`）。
+
+### 仓库 hygiene（2026-07-22）
+
+- 删 ad-hoc 探针：`probe-dom.mjs` / `probe-dom2.mjs` / `probe-f6.mjs` / `start-watch-now.ps1`；正式路径仅 `probe-session-dom` · `probe-white-flash` · `probe-project-hd`。
+- `docs/overview.md` 改为归档索引；`PROJECT.md` §0 索引瘦身为常读文档 + 指向 overview。
+- 远端清理：已合/空 diff 的 feature·docs 分支删除；仅保留 `main`。
 
 ### UX（U3 / U4）
 
