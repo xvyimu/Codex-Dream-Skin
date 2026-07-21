@@ -16,6 +16,10 @@ if (Test-Path -LiteralPath $ui) {
   . $ui
   if ($Code -ieq 'first-run') {
     [void](Show-CodexSkinFirstRunGuide)
+  } elseif ($Code -ieq 'apply-ok' -or $Code -ieq 'apply-fail') {
+    # U3: optional balloon after CLI apply / external kick. Respects ui-prefs.
+    $name = if ($Detail) { $Detail } else { '皮肤' }
+    [void](Show-CodexSkinApplyFeedback -ThemeName $name -Ok:($Code -ieq 'apply-ok') -Ms $Ms)
   } else {
     [void](Show-CodexSkinUserFeedback -Code $Code -Detail $Detail -Ms $Ms)
   }

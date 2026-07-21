@@ -71,3 +71,4 @@ npm run probe:session
 - Quiet post-update exit=2 + soft reattach OK = 正式降级，**不算**发版失败（见 publish 日志 `soft reattach OK` + 失败 check 摘要）
 - 代码签名 / SmartScreen（#24）：近期不购证；决策见 [plans/codesign-decision-2026-07-21.md](./plans/codesign-decision-2026-07-21.md)
 - 链：PROJECT §6 · CONTRIBUTING §C-3/C-4 · §9.4 · 建议 baseline：`write-baseline.ps1` · 留痕：`docs/evidence/`
+- [v6 调研（2026-07-21）](./research/2026-07-21-master-research-v6-palette-root-and-hd-bubble.md)：闪白根因补丁 48b5bae 全量透传 palette 四色 + HD art + 气泡双模式 0326abb + ahead 8 + v5 假关闭教训 + BASELINE 自动生成；probe-white-flash pass

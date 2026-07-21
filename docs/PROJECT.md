@@ -41,7 +41,9 @@
 | [`research/2026-07-21-progress-aligned-debt-and-portfolio.md`](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) | 进度对齐：已关债 · 多方案组合 · 打磨卡片（长文） |
 | [`research/2026-07-21-integrated-master-research.md`](./research/2026-07-21-integrated-master-research.md) | 整合总册（中期） |
 | [`research/2026-07-21-master-research-v2-frozen.md`](./research/2026-07-21-master-research-v2-frozen.md) | 选代入口 v2（四包后） |
-| [`research/2026-07-21-master-research-v3-ux-visual.md`](./research/2026-07-21-master-research-v3-ux-visual.md) | **选代入口 v3**：工程冻结 + UX/视觉升级方案库 |
+| [`research/2026-07-21-master-research-v3-ux-visual.md`](./research/2026-07-21-master-research-v3-ux-visual.md) | 选代入口 v3：工程冻结 + UX/视觉升级方案库 |
+| [`research/2026-07-21-master-research-v4-u3u4-product.md`](./research/2026-07-21-master-research-v4-u3u4-product.md) | 选代入口 v4：U3/U4 后进度 + 五件套 + 方案评分 |
+| [`research/2026-07-21-master-research-v5-visual-sync-and-next.md`](./research/2026-07-21-master-research-v5-visual-sync-and-next.md) | **选代入口 v5**：闪白修后 · ahead 交付 · 市场/架构/规范/路线图/API + 方案评分 |
 | [`adr/`](./adr/) | 架构决策（0001 合并 · 0002 上游 · 0003 版本源） |
 | 根目录 `CLAUDE.md` | Agent 短索引 |
 
@@ -513,6 +515,7 @@ paused/locked: false（正常使用时）
 | 1.3.19–1.3.21 | 会话 probe 实锤 · 气泡去描边 · D3D Enable · open-healthy 异步 · FastLaunch |
 | 1.3.22–1.3.24 | publish reattach · UTF-8 控制台 · tray native focus · wait-shell 冷启 |
 | 1.3.25 + `f833ee8` | 安装 runtime 1.3.25-4dca30；git 主题 catalog 11 套 + schema 双格式 |
+| v6 调研（2026-07-21） | 闪白根因补丁 `48b5bae` 全量透传 palette 四色 · HD art + 气泡双模式（`0326abb`）· ahead 8 · v5 假关闭教训 · BASELINE 自动生成 |
 
 ### 12.2 下一阶段建议（按优先级）
 

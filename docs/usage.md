@@ -14,7 +14,7 @@
 | 打开带皮肤的 Codex | 桌面 / 任务栏 / 开始菜单 **Codex** 或 **ChatGPT**（→ `CodexFastLaunch.exe`） |
 | 已经打开再点一次 | 同一图标 → **聚焦窗口**（~40–100ms），并确保托盘在 |
 | 换一套皮肤（推荐） | 桌面 / 开始菜单 **Codex 换肤**（图形列表） |
-| 窗口内快速切换 | **F6** |
+| 窗口内快速切换 | **托盘「切换皮肤」** / **Codex 换肤** / CLI `apply`（见下；F6 见说明） |
 | 托盘管理 / 暂停 | 系统托盘 **Codex Dream Skin** 图标右键 |
 | 皮肤没了 | 开始菜单 **Codex 工具 → 皮肤修复**，或再点 **Codex** |
 | 商店更新后 | **Codex 工具 → 商店更新后修复** |
@@ -74,9 +74,32 @@ powershell -File "$env:LOCALAPPDATA\Programs\CodexDreamSkin\open-codex-dream-ski
 
 系统托盘图标 → **切换皮肤（N）** → 点名称（当前项带 ✓）
 
-### 窗口内
+### 窗口内 F6（当前状态 · 2026-07-21）
 
-按 **F6** 循环切换；toast 显示 `名称（i/N）`。
+**历史**：上游/早期 runtime 曾在窗内 **F6** 循环 catalog，并 toast `名称（i/N）`。  
+**现状（CDP 探针）**：当前 `renderer-inject` 的 `__CODEX_DREAM_SKIN_STATE__` **无** `cycleTheme` / `setTheme` / `catalog` 热路径（仅 ensure/cleanup/profile 等）。按 F6 **不会**可靠换肤。
+
+**请改用**（均已验证）：
+
+| 方式 | 操作 |
+|------|------|
+| 图形 | 开始菜单 / 桌面 **Codex 换肤** |
+| 托盘 | 系统托盘 → **切换皮肤（N）** |
+| CLI | `node packages/core/cli.mjs apply --theme <id>` |
+
+恢复窗内 F6 需另开工程卡（注入 catalog + cycleTheme + toast，且服从 catalog 预算；改 runtime **必 publish**）。见 [`PAIN-POINTS.md`](./PAIN-POINTS.md) **#25**。
+
+### 消息气泡样式（对比）
+
+提问 / 回答气泡支持两种样式（**不改功能，只改描边与块面**）：
+
+| 样式 | 观感 | 如何选 |
+|------|------|--------|
+| **无边框**（默认） | heige 原味：无描边、轻阴影、圆角 | 默认；托盘显示「消息气泡：无边框」 |
+| **圆角卡片** | 细描边 + 更清晰卡片块面 | 托盘点「消息气泡：无边框（点切圆角卡片）」 |
+
+配置：`%LOCALAPPDATA%\CodexDreamSkin\ui-prefs.json` → `"bubbleStyle": "borderless" | "card"`。  
+切换后托盘会 **kick** 热应用；也可 CLI 后手动 kick。
 
 ### CLI（推荐脚本/自动化）
 
@@ -87,7 +110,28 @@ node D:\orca\codex-skin\packages\core\cli.mjs apply --theme miku-488137
 node D:\orca\codex-skin\packages\core\cli.mjs doctor
 ```
 
-`apply` 只写 `active-theme`，由 watch injector 热更新，**不会**再起第二套注入器。
+`apply` 只写 `active-theme`，由 watch injector 热更新，**不会**再起第二套注入器。  
+成功后默认弹一次轻反馈气泡（U3）；失败时气泡会带简短 note。
+
+### 换肤成功气泡（可关 · U3）
+
+| 路径 | 说明 |
+|------|------|
+| 托盘右键 | **换肤气泡：开（点此关闭）** / **关（点此开启）** |
+| 配置文件 | `%LOCALAPPDATA%\CodexDreamSkin\ui-prefs.json` → `"applyBalloonEnabled": false` |
+
+关闭后：托盘菜单 ✓ / 换肤面板文案仍更新；**错误类**提示（裸启、CDP 关闭等）与**首次入口**提示不受此开关影响。
+
+### 首次入口提示（U4）
+
+第一次用任务栏 **Codex** 打开时，会一次性气泡说明：
+
+1. 日常用任务栏「Codex」  
+2. **不要用微软商店磁贴**（无皮肤是 OS 硬限 #21，不是故障）  
+3. 换肤入口与异常修复  
+
+标记文件：`%LOCALAPPDATA%\CodexDreamSkin\first-run-shown.flag`（存在即不再显示）。  
+**不会**劫持商店 AUMID。要再看一次：删掉该 flag 后重新 open。
 
 ### 重新导入内置主题
 
@@ -149,9 +193,12 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File "$env:LOCALAPPDATA\Pro
 |------|------|
 | 窗口在、没皮肤 | **Codex 工具 → 皮肤修复**，或再点任务栏 Codex |
 | 从商店磁贴打开无皮肤 | 正常（#21）；改用任务栏钉着的 Codex |
-| F6 提示只有 1 套 | catalog 空或锁定；`import-themes` / unlock |
+| F6 无反应 / 不换肤 | **预期（#25）**：当前无 cycleTheme；用托盘 / Codex 换肤 / CLI apply |
+| F6 提示只有 1 套（历史） | catalog 空或锁定；`import-themes` / unlock（待 F6 恢复后） |
 | 托盘菜单还是旧文案 | 退出托盘后重新点 Codex 拉起 |
 | CLI apply 没变化 | 先确认任务栏 Codex 已开且 `doctor` 显示 injectorAlive |
+| apply 无气泡 | 托盘「换肤气泡」已关，或看 `ui-prefs.json`；面板/托盘 ✓ 仍会变 |
+| 想再看首次入口提示 | 删 `%LOCALAPPDATA%\CodexDreamSkin\first-run-shown.flag` 后点任务栏 Codex |
 | 旧 heige / Codex Studio 入口 | **已废弃**；删残留快捷方式后只用本产品 Codex |
 
 ---
@@ -176,4 +223,5 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File "$env:LOCALAPPDATA\Pro
 - 不要改 `WindowsApps` 里的 Codex 安装文件  
 - 不要并行跑旧 heige 一次性注入 / 旧 studio 入口  
 - 不要用微软商店磁贴当日常入口（无 CDP = 无皮肤）  
-- 不要在锁定模式下指望 F6/托盘多切  
+- 不要默认依赖窗内 **F6** 换肤（#25 未恢复前请用托盘/面板/CLI）  
+- 不要在锁定模式下指望托盘多切  

@@ -143,14 +143,109 @@ function Show-CodexSkinMessageBox {
   return [System.Windows.Forms.MessageBox]::Show($Message, $Title, $buttons, $icon)
 }
 
+function Get-CodexSkinUiPrefsPath {
+  param([string]$StateRoot = (Get-CodexSkinStateRoot))
+  return (Join-Path $StateRoot 'ui-prefs.json')
+}
+
+function Get-CodexSkinUiPrefs {
+  <#
+  .SYNOPSIS
+    Read user UX prefs (apply balloon on/off). Missing file → defaults.
+  #>
+  param([string]$StateRoot = (Get-CodexSkinStateRoot))
+  $defaults = [ordered]@{
+    schemaVersion = 1
+    applyBalloonEnabled = $true
+    # borderless = heige 无描边；card = 圆角卡片描边
+    bubbleStyle = 'borderless'
+  }
+  $path = Get-CodexSkinUiPrefsPath -StateRoot $StateRoot
+  try {
+    if (Test-Path -LiteralPath $path -PathType Leaf) {
+      $raw = Read-CodexSkinJsonUtf8 -Path $path
+      if ($null -ne $raw) {
+        if ($null -ne $raw.applyBalloonEnabled) {
+          $defaults.applyBalloonEnabled = [bool]$raw.applyBalloonEnabled
+        }
+        if ($null -ne $raw.schemaVersion) {
+          $defaults.schemaVersion = [int]$raw.schemaVersion
+        }
+        if ($raw.bubbleStyle -is [string]) {
+          $bs = $raw.bubbleStyle.Trim().ToLowerInvariant()
+          if ($bs -eq 'card' -or $bs -eq 'borderless') {
+            $defaults.bubbleStyle = $bs
+          }
+        }
+      }
+    }
+  } catch {}
+  return [pscustomobject]$defaults
+}
+
+function Set-CodexSkinUiPrefs {
+  <#
+  .SYNOPSIS
+    Merge and write ui-prefs.json (stateRoot). Non-blocking on failure.
+  #>
+  param(
+    [string]$StateRoot = (Get-CodexSkinStateRoot),
+    [Nullable[bool]]$ApplyBalloonEnabled = $null,
+    [ValidateSet('borderless', 'card', '')][string]$BubbleStyle = ''
+  )
+  try {
+    $cur = Get-CodexSkinUiPrefs -StateRoot $StateRoot
+    $bubble = if ($BubbleStyle -and $BubbleStyle.Trim()) {
+      $BubbleStyle.Trim().ToLowerInvariant()
+    } else {
+      [string]$cur.bubbleStyle
+    }
+    if ($bubble -ne 'card') { $bubble = 'borderless' }
+    $obj = [ordered]@{
+      schemaVersion = 1
+      applyBalloonEnabled = $(if ($null -ne $ApplyBalloonEnabled) { [bool]$ApplyBalloonEnabled } else { [bool]$cur.applyBalloonEnabled })
+      bubbleStyle = $bubble
+      updatedAt = (Get-Date).ToUniversalTime().ToString('o')
+    }
+    Write-CodexSkinJsonUtf8NoBom -Path (Get-CodexSkinUiPrefsPath -StateRoot $StateRoot) -Object $obj
+    return [pscustomobject]$obj
+  } catch {
+    return $null
+  }
+}
+
+function Get-CodexSkinBubbleStyle {
+  param([string]$StateRoot = (Get-CodexSkinStateRoot))
+  try {
+    $s = [string]((Get-CodexSkinUiPrefs -StateRoot $StateRoot).bubbleStyle)
+    if ($s -eq 'card') { return 'card' }
+  } catch {}
+  return 'borderless'
+}
+
+function Test-CodexSkinApplyBalloonEnabled {
+  param([string]$StateRoot = (Get-CodexSkinStateRoot))
+  try {
+    return [bool]((Get-CodexSkinUiPrefs -StateRoot $StateRoot).applyBalloonEnabled)
+  } catch {
+    return $true
+  }
+}
+
 function Show-CodexSkinBalloon {
   param(
     [Parameter(Mandatory = $true)][string]$Message,
     [string]$Title = 'Codex Skin',
     [int]$Ms = 2200,
     [string]$ThrottleKey = '',
-    [int]$ThrottleSeconds = 60
+    [int]$ThrottleSeconds = 60,
+    # Success = respect ui-prefs applyBalloonEnabled (U3 可关); Error/Info always attempt.
+    [ValidateSet('Success', 'Error', 'Info')][string]$Kind = 'Info',
+    [switch]$Force
   )
+  if (-not $Force -and $Kind -eq 'Success' -and -not (Test-CodexSkinApplyBalloonEnabled)) {
+    return
+  }
   # Same-cause throttle: avoid balloon spam on repeated taskbar clicks.
   if ($ThrottleKey) {
     try {
@@ -177,6 +272,30 @@ function Show-CodexSkinBalloon {
   } catch {
     # 托盘气泡失败不影响主流程
   }
+}
+
+function Show-CodexSkinApplyFeedback {
+  <#
+  .SYNOPSIS
+    U3: light success/fail balloon after theme apply/kick. Respects applyBalloonEnabled.
+  #>
+  param(
+    [Parameter(Mandatory = $true)][string]$ThemeName,
+    [bool]$Ok = $true,
+    [string]$Detail = '',
+    [string]$StateRoot = (Get-CodexSkinStateRoot),
+    [int]$Ms = 1600
+  )
+  if (-not (Test-CodexSkinApplyBalloonEnabled -StateRoot $StateRoot)) { return $false }
+  $name = if ($ThemeName) { $ThemeName.Trim() } else { '皮肤' }
+  if ($Ok) {
+    $msg = if ($Detail) { "已切换：$name`n$Detail" } else { "已切换：$name" }
+    Show-CodexSkinBalloon -Message $msg -Title 'Codex 换肤' -Ms $Ms -ThrottleKey 'apply-ok' -ThrottleSeconds 1 -Kind Success
+  } else {
+    $msg = if ($Detail) { "已写入：$name · $Detail" } else { "已写入：$name · 注入未完成" }
+    Show-CodexSkinBalloon -Message $msg -Title 'Codex 换肤' -Ms ([Math]::Max($Ms, 2200)) -ThrottleKey 'apply-fail' -ThrottleSeconds 2 -Kind Success
+  }
+  return $true
 }
 
 function Write-CodexSkinOpenStatus {
@@ -364,13 +483,16 @@ function Set-CodexSkinFirstRunShown {
 function Show-CodexSkinFirstRunGuide {
   param([string]$StateRoot = (Get-CodexSkinStateRoot))
   if (-not (Test-CodexSkinFirstRunPending -StateRoot $StateRoot)) { return $false }
+  # U4: one-shot entry tip. Flag is written even if balloon fails so we never loop.
   $msg = @(
     '欢迎使用 Codex 皮肤',
-    '1) 日常请点任务栏「Codex」（不要用商店磁贴）',
-    '2) 换肤：托盘「换肤…」或开始菜单「Codex 换肤」',
-    '3) 异常时看托盘状态，或「一键修复」'
+    '1) 日常请点任务栏「Codex」',
+    '   不要用微软商店磁贴（无皮肤，不是故障）',
+    '2) 换肤：开始菜单「Codex 换肤」· 托盘 · F6',
+    '3) 异常：托盘状态或「一键修复」'
   ) -join [Environment]::NewLine
-  Show-CodexSkinBalloon -Message $msg -Title 'Codex Skin' -Ms 6000 -ThrottleKey 'first-run' -ThrottleSeconds 3600
+  # Force: first-run is not gated by applyBalloonEnabled (that only covers apply success).
+  Show-CodexSkinBalloon -Message $msg -Title 'Codex Skin' -Ms 6500 -ThrottleKey 'first-run' -ThrottleSeconds 3600 -Kind Info -Force
   Set-CodexSkinFirstRunShown -StateRoot $StateRoot
   Write-CodexSkinOpenStatus -Phase 'first-run' -Detail 'guide shown' -Code 'first-run' -Ok $true
   return $true

@@ -10,6 +10,18 @@
 
 > 产品线版本仍为 **1.3.25**；安装态 runtimeId 以 doctor 为准（例 `1.3.25-107b0e`）。下列为扫描落地 + 任务卡收口，**未**改 SKIN_VERSION 产品线号。
 
+### UX（U3 / U4）
+
+- **U3 换肤成功轻反馈**：`Show-CodexSkinApplyFeedback` + `ui-prefs.json`（`applyBalloonEnabled`，默认真）；托盘菜单可关；换肤面板 / 托盘切换 / CLI `apply` 统一尊重开关；托盘切换补 control-plane kick。
+- **U4 首次入口提示**：`Show-CodexSkinFirstRunGuide` 文案强化「任务栏 Codex / 勿商店磁贴」；`first-run-shown.flag` 一次性；**不**劫持 AUMID。
+- **B 可读性门禁**：`validateThemeManifest` 对 `text`/`surface` 做对比度启发式（≥4.5）；`test:themes` 含低对比拒绝夹具；11 套内置主题实测通过。
+- **视觉回归（开项目不闪白）**：`renderer-inject` 用 palette.surface 亮度强制 dark/light；`appearance:auto` 缺省回落 dark；路由短暂无 `main` 时**不清皮肤**。**根因补丁**：`injector.loadTheme` 此前只透传 `palette.accent`，`surface/text/secondary` 未进 CDP payload → surfaceLuma 无效、暗色主题仍挂 `dream-theme-light`；现全量透传四色。本机 CDP 探针 `probe-white-flash.mjs`：**pass**（dark · body oklab≈0.19 · surfaceLuma≈0.105）。
+- **项目页高清皮肤**：提高 `--dream-task-ambient-opacity`、降低 task immersive 洗白；宽图 task 用 cover 而非「条带 + 低透明度」，对齐上游展示图沉浸感（编码可读仍靠左侧 gradient）。
+- **消息气泡双模式**：`borderless`（默认无边框）/ `card`（圆角卡片描边）；`ui-prefs.bubbleStyle` + 托盘切换 + inject 进 payload。
+- **#25 F6**：探针确认无 `cycleTheme`；`usage.md` / `PAIN-POINTS` 对齐「请用托盘/面板/CLI」。
+- **调研 v5**：`docs/research/2026-07-21-master-research-v5-visual-sync-and-next.md` + PROJECT 索引。
+- **BASELINE**：随 HEAD / 安装 runtime 脚本刷新。
+
 ### 安全与控制面
 
 - **SEC-01**：control-plane mutating POST 强制 `x-codex-skin-token`；GET `/health` 免 token；kick-inject / launcher-ui 自动带 token。
@@ -27,6 +39,10 @@
 - **CONTRIBUTING.md** §C-1–C-9 · PR 模板 · 任务卡 `docs/plans/task-cards-2026-07-21.md` · 维护 Agent 提示词。
 - AUDIT/SCAN 基线校准 · PAIN #24 SmartScreen · GLOSSARY 扩展 · WIN-02 冻结表 · residual G5-C 行号反向链接。
 - injector TOC/Region 注释；SKIN_VERSION stamp 注释澄清。
+
+---
+
+- **v6 调研**：[`research/2026-07-21-master-research-v6-palette-root-and-hd-bubble`](./research/2026-07-21-master-research-v6-palette-root-and-hd-bubble.md)（闪白根因补丁 `48b5bae` 全量透传 palette 四色 + HD art + 气泡双模式 `0326abb` + ahead 8 + v5 假关闭教训 + BASELINE 自动生成）+ [overview.md](./overview.md) 挂链 + PROJECT 索引。
 
 ---
 

@@ -374,12 +374,18 @@ async function loadTheme(themeDir) {
     },
     palette: {},
   };
-  if (typeof palette.accent === "string" && palette.accent.trim()) {
-    const accent = palette.accent.trim();
-    if (!/^(?:#[\da-f]{3,8}|(?:rgb|hsl|oklch|oklab)\([^;{}]{1,96}\))$/i.test(accent)) {
-      throw new Error("palette.accent is not a supported CSS color");
+  // Pass full heige/DreamSkin palette (not just accent). surface/text drive
+  // renderer resolveAppearance + optional CSS vars; omitting surface forced
+  // appearance:auto onto flaky shell light → white flash on project open.
+  const cssColor = /^(?:#[\da-f]{3,8}|(?:rgb|hsl|oklch|oklab)\([^;{}]{1,96}\))$/i;
+  for (const key of ["accent", "secondary", "surface", "text"]) {
+    if (typeof palette[key] === "string" && palette[key].trim()) {
+      const value = palette[key].trim();
+      if (!cssColor.test(value)) {
+        throw new Error(`palette.${key} is not a supported CSS color`);
+      }
+      theme.palette[key] = value;
     }
-    theme.palette.accent = accent;
   }
   const [themeStat, imageStat] = await Promise.all([fs.stat(themePath), fs.stat(realImagePath)]);
   if (!imageStat.isFile()) throw new Error("Theme image is not a file");
@@ -476,8 +482,14 @@ async function loadCatalogMember(themeDir) {
         } : { focusX: null, focusY: null, safeArea: "auto", taskMode: "auto" },
         palette: {},
       };
-      if (raw.palette && typeof raw.palette.accent === "string" && raw.palette.accent.trim()) {
-        theme.palette.accent = raw.palette.accent.trim();
+      if (raw.palette && typeof raw.palette === "object" && !Array.isArray(raw.palette)) {
+        const cssColor = /^(?:#[\da-f]{3,8}|(?:rgb|hsl|oklch|oklab)\([^;{}]{1,96}\))$/i;
+        for (const key of ["accent", "secondary", "surface", "text"]) {
+          if (typeof raw.palette[key] === "string" && raw.palette[key].trim()) {
+            const value = raw.palette[key].trim();
+            if (cssColor.test(value)) theme.palette[key] = value;
+          }
+        }
       }
       const thumbBytes = await fs.readFile(thumbPath);
       const ext = path.extname(thumbPath).toLowerCase();
@@ -621,16 +633,33 @@ async function loadPayload(themeDir = path.join(root, "assets"), candidateTheme 
   // config (art focus + palette + brand copy) that drives the ::before/::after
   // brand overlay. Catalog stays the F6 channel (best-effort; may be dropped by
   // older renderers that only read 3 args).
+  // bubbleStyle from ui-prefs.json (borderless|card) — conversation chrome.
+  let bubbleStyle = "borderless";
+  try {
+    const stateRoot = path.dirname(path.resolve(themeDir));
+    const prefsPath = path.join(stateRoot, "ui-prefs.json");
+    const prefsRaw = await fs.readFile(prefsPath, "utf8");
+    const prefs = JSON.parse(prefsRaw.replace(/^﻿/, ""));
+    if (prefs && typeof prefs.bubbleStyle === "string") {
+      const bs = prefs.bubbleStyle.trim().toLowerCase();
+      if (bs === "card" || bs === "borderless") bubbleStyle = bs;
+    }
+  } catch {
+    // missing prefs → borderless default
+  }
+  const themeForInject = { ...loadedTheme.theme, bubbleStyle };
   const activeArtDataUrl = imageDataUrl(loadedTheme);
   const payload = template
     .replace("__DREAM_CSS_JSON__", JSON.stringify(css))
     .replace("__DREAM_ART_JSON__", JSON.stringify(activeArtDataUrl))
-    .replace("__DREAM_THEME_JSON__", JSON.stringify(loadedTheme.theme))
+    .replace("__DREAM_THEME_JSON__", JSON.stringify(themeForInject))
     .replace("__DREAM_THEME_CATALOG_JSON__", JSON.stringify(themeCatalog.entries));
   const fingerprint = createHash("sha256")
     .update(loadedTheme.fingerprint)
     .update("\0")
     .update(themeCatalog.fingerprint)
+    .update("\0")
+    .update(bubbleStyle)
     .digest("hex");
   const { imageBytes: _imageBytes, ...themeState } = loadedTheme;
   return {
