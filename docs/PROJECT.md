@@ -38,6 +38,10 @@
 | [`plans/task-cards-2026-07-21.md`](./plans/task-cards-2026-07-21.md) | 维护任务卡（P1–P3） |
 | [`prompts/agent-maintain-task-cards-zh.md`](./prompts/agent-maintain-task-cards-zh.md) | 维护 Agent 可粘贴提示词 |
 | [`research/2026-07-21-peer-landscape-and-architecture.md`](./research/2026-07-21-peer-landscape-and-architecture.md) | 同类项目对照 · 技术债 · 架构优化调研（长文） |
+| [`research/2026-07-21-github-peer-matrix.md`](./research/2026-07-21-github-peer-matrix.md) | GitHub 细矩阵 · C/D/E 分层 |
+| [`adr/0004-engineering-modernization-u1.md`](./adr/0004-engineering-modernization-u1.md) | **Proposed** 工程现代化 / 依赖双平面 |
+| [`adr/0005-thin-product-shell-u3.md`](./adr/0005-thin-product-shell-u3.md) | **Proposed** 薄产品壳（不替换守护） |
+| [`plans/u1-u3-two-week-plan-2026-07-21.md`](./plans/u1-u3-two-week-plan-2026-07-21.md) | U1+U3 两周排期 |
 | [`research/2026-07-21-progress-aligned-debt-and-portfolio.md`](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) | 进度对齐：已关债 · 多方案组合 · 打磨卡片（长文） |
 | [`research/2026-07-21-integrated-master-research.md`](./research/2026-07-21-integrated-master-research.md) | 整合总册（中期） |
 | [`research/2026-07-21-master-research-v2-frozen.md`](./research/2026-07-21-master-research-v2-frozen.md) | 选代入口 v2（四包后） |
