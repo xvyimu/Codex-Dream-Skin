@@ -102,6 +102,31 @@ watch injector 启动
 
 ---
 
+## 跨层字段契约（injector → CDP → renderer）
+
+> **TD-V5-LESSON**（v6）：「已修」须同时具备命令级证据 + 根因一句话 + 代码路径:行号。  
+> v5 假关闭根因：`loadTheme` 只透传 `palette.accent`，`surface` 未进 payload → renderer `surfaceLuma` 无效 → 暗色主题可挂 `dream-theme-light` → 开项目闪白。  
+> 根因补丁：`48b5bae` · `packages/runtime/scripts/injector.mjs` `loadTheme` / `loadCatalogMember`。
+
+### palette 四色必传
+
+| 字段 | 类型（经 CSS color 正则） | 用途 | 缺失后果 |
+|------|---------------------------|------|----------|
+| `accent` | string | 品牌色 / 描边 / 高亮 | 主题无品牌色 |
+| `secondary` | string | 次要强调 | 次要元素无色 |
+| `surface` | string | **surfaceLuma → dark/light 类** | **闪白回归**：`surfaceLuma` 非 number → 回落 shell auto |
+| `text` | string | 正文色 + B 对比度门 | 正文无色 / 对比不足 |
+
+**透传实现**：`packages/runtime/scripts/injector.mjs` 对 `accent|secondary|surface|text` 循环校验并写入 `theme.palette`（`loadTheme` 与 catalog member 一致）。  
+**消费实现**：`packages/runtime/assets/renderer-inject.js` 读四色；`surfaceLuma` 当前仅对 `#rrggbb` 6 位 hex 计算（`oklab`/`rgb()` surface → `null` → shell 回落）。  
+**判定阈值**：`surfaceLuma ≤ 0.45` → dark；`≥ 0.62` → light；中间带走 `detectShellAppearance()`，最终 auto 缺省偏 dark。  
+**验收探针**：`node scripts/windows/probe-white-flash.mjs`（需本机 CDP 9335；`pass=true` 且 `surfaceLuma` 有限数字）。  
+**`probe-project-hd.mjs`**：仅 CDP 快照 dump，**无 pass 断言**——不得单独当作「已修」证据。
+
+改 injector 透传或 renderer 消费时：**两边对照本表**；缺字段不得只靠「本层单测绿」声明完成。
+
+---
+
 ## 包边界
 
 | 包 | 语言 | 依赖 | 说明 |
@@ -203,6 +228,9 @@ Install / Uninstall 只 stamp 安装树。见 ADR 0003 产品包表。
 ## 相关文档
 
 - `PROJECT.md` — **项目总纲**（分层 · 模块契约 · 验收 · 路线图）
+- `overview.md` — 调研报告索引（v1–v6）
+- `research/2026-07-21-master-research-v6-palette-root-and-hd-bubble.md` — v6 根因与契约背景
+- `audit/2026-07-21-v6-review.md` · `audit/2026-07-21-v6-advance.md` — v6 无证不信审核 / 推进
 - `AUDIT-2026-07-20.md` — 全面检查报告
 - `README.md` — 项目入口
 - `CHANGELOG.md` — 版本时间线
