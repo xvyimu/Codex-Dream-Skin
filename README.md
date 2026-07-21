@@ -30,7 +30,7 @@
 ## 目录
 
 ```text
-apps/launcher          用户入口（薄 PS1）
+apps/launcher          用户入口（薄 PS1 · 含 tray/launch/restore 第一方源）
 apps/native/           CodexFastLaunch
 packages/core          发现 / CDP / doctor / kick / CLI
 packages/themes        schema / catalog / heige→DreamSkin
@@ -39,7 +39,7 @@ packages/core-win      PowerShell 共享库
 packages/contracts     开发态 TypeScript 契约（ADR 0004）
 scripts/windows        发布 / 打包 / 探针
 themes/                内置主题源
-vendor/dreamskin       冻结第三方快照（生产路径禁止 import · NOTICE）
+vendor/dreamskin       冻结第三方快照（生产路径禁止 import/ship · NOTICE）
 docs/                  PROJECT · ARCHITECTURE · ADR · 报告
 ```
 

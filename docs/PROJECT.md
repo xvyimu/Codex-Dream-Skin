@@ -170,10 +170,10 @@
 | `packages/themes` | Node ESM | → core（常量）；动态 → runtime/thumb | schema 校验、catalog 列表、heige→DreamSkin 适配与写入 | 启动进程；CDP evaluate |
 | `packages/runtime` | Node ESM + assets | **自包含**，不依赖 core | watch injector、control-plane、CSS/JS 资源、wait-shell、thumb | 主题业务规则；快捷方式；CLI 用户命令解析 |
 | `packages/core-win` | PowerShell 5.1 | 无 | launcher 共享库：日志/托盘/焦点/state IO/runtime 解析 | 主题 schema；CDP 协议实现 |
-| `apps/launcher` | PowerShell | dot-source core-win | 薄入口：open / check / switch / smoke / kick | 业务算法（只编排） |
+| `apps/launcher` | PowerShell | dot-source core-win | 薄入口：open / check / switch / smoke / kick · **tray / launch / restore 第一方源** | 业务算法（只编排） |
 | `themes/` | JSON + 图 | 无 | 内置主题源（heige 格式） | 运行时逻辑 |
-| `scripts/windows` | PS / mjs | 读仓库 | publish、import、探针 | 常驻守护 |
-| `vendor/dreamskin` | 冻结第三方快照 | 只读 | 离线对照（NOTICE） | 任何运行时引用 / 自动同步 |
+| `scripts/windows` | PS / mjs | 读仓库 | publish、import、探针（`publish` **不**读 vendor） | 常驻守护 |
+| `vendor/dreamskin` | 冻结第三方快照 | 只读 | 离线对照（NOTICE） | **任何**运行时引用 / 自动同步 / **publish 拷贝** |
 
 ### 3.2 硬性依赖规则（框架限定 · 违反即拒合）
 
@@ -193,6 +193,7 @@
   第二条 heige --once / legacy-inject 注入旁路
   同时运行两个 injector
   生产路径 import vendor/dreamskin
+  publish-runtime.ps1 从 vendor/ 拷贝任何文件进 versions/ 或 programRoot
 ```
 
 **依赖双平面（ADR 0004 Accepted）**

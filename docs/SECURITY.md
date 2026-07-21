@@ -60,7 +60,7 @@ Out-of-scope examples:
 
 ## Vendor snapshot
 
-`vendor/dreamskin/` is a **frozen third-party snapshot** (not an active upstream). It is not re-licensed by this document; see root `NOTICE` and ADR 0006. Production paths must not import `vendor/`.
+`vendor/dreamskin/` is a **frozen third-party snapshot** (not an active upstream). It is not re-licensed by this document; see root `NOTICE` and ADR 0006. Production paths must not import `vendor/`. `publish-runtime.ps1` must not copy from `vendor/` into `versions/<id>/` or programRoot — load-bearing tray/launch/restore live under `apps/launcher/`.
 
 ## Related
 

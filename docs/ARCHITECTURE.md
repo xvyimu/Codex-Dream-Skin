@@ -182,9 +182,9 @@ Install / Uninstall 只 stamp 安装树。见 ADR 0003 产品包表。
 | `packages/runtime/scripts/injector.mjs` | DreamSkin watch 引擎（扩展至 1.3.25） |
 | `packages/runtime/assets/*` | DreamSkin CSS/JS + heige-fused 视觉 |
 | `themes/*` | heige 内置主题 + preset-arina-hashimoto（11 套） |
-| `apps/launcher/*` | DreamSkin 入口脚本 |
+| `apps/launcher/*` | DreamSkin 入口脚本 · **tray / launch / restore 第一方源** |
 | `apps/native/CodexFastLaunch` | 本仓原生任务栏入口 |
-| `vendor/dreamskin/*` | 冻结第三方快照（NOTICE · 非在线上游） |
+| `vendor/dreamskin/*` | 冻结第三方快照（NOTICE · 非在线上游 · **不 ship**） |
 
 ---
 

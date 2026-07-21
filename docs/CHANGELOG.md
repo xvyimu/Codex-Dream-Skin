@@ -16,6 +16,8 @@
 - **ADR 0006 Accepted**：独立产品线；**废止** ADR 0002 在线同步。
 - **`sync-upstream-assets.ps1` 退役**（exit 2 + 指向 0006）；`docs/upstream-sync.json` → `status: retired`。
 - **`vendor/dreamskin/` 定性为冻结第三方快照**（`NOTICE` 重写）；生产路径仍禁止 import。
+- **装机脚本 first-party 化**：`tray` / `launch` / `restore` `git mv` → `apps/launcher/`；`publish-runtime.ps1` 只从 `apps/launcher` 拷贝（**不再**读 `vendor/`）；`install`/`verify` 遗留脚本停止 ship。
+- **publish 修**：拷贝清单补 `fs-io.mjs`（control-plane 依赖；漏拷会导致控制面挂）。
 - 身份 / 总纲 / 架构 / 安全 / 术语 / CONTRIBUTING 对齐「仅 origin · 当新项目开发」。
 
 ### UX（U3 / U4）

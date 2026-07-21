@@ -18,9 +18,9 @@ Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题。Node ≥20，ESM。
 | `packages/core-win/` | Windows pwsh 运行时封装 |
 | `packages/runtime/` | 注入/元数据/控制面 |
 | `packages/themes/` | 主题 schema / store / adapter |
-| `apps/launcher/` | 启动器、切主题、冒烟 |
+| `apps/launcher/` | 启动器、切主题、冒烟 · tray/launch/restore 第一方源 |
 | `themes/` | 主题资源 |
-| `vendor/dreamskin/` | 冻结第三方快照（生产勿 import · NOTICE） |
+| `vendor/dreamskin/` | 冻结第三方快照（生产勿 import/ship · NOTICE） |
 | `docs/` | PROJECT / ADR / 痛点 / 任务卡 |
 
 ## 命令
