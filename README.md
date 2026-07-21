@@ -6,7 +6,6 @@
 **许可：** [MIT](./LICENSE) · Copyright (c) 2026 xvyimu  
 
 > **独立产品线**（ADR 0006）：仅 `origin` → 本仓；**无** upstream remote / 无 fork parent。  
-> `vendor/dreamskin/` 是**冻结**第三方快照（见 [NOTICE](./NOTICE)），不自动同步。  
 > **产品显示名**（开始菜单 / 安装路径 `CodexDreamSkin`）与 GitHub 仓名分离。  
 > 身份卡：[GITHUB_IDENTITY.md](./GITHUB_IDENTITY.md)
 
@@ -39,7 +38,6 @@ packages/core-win      PowerShell 共享库
 packages/contracts     开发态 TypeScript 契约（ADR 0004）
 scripts/windows        发布 / 打包 / 探针
 themes/                内置主题源
-vendor/dreamskin       冻结第三方快照（生产路径禁止 import/ship · NOTICE）
 docs/                  PROJECT · ARCHITECTURE · ADR · 报告
 ```
 

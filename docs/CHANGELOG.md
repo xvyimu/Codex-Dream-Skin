@@ -14,33 +14,26 @@
 
 - **彻底脱离原仓工作流**：删除 git remote `upstream`；GitHub 本仓已非 fork（`isFork: false`）。
 - **ADR 0006 Accepted**：独立产品线；**废止** ADR 0002 在线同步。
-- **`sync-upstream-assets.ps1` 退役**（exit 2 + 指向 0006）；`docs/upstream-sync.json` → `status: retired`。
-- **`vendor/dreamskin/` 定性为冻结第三方快照**（`NOTICE` 重写）；生产路径仍禁止 import。
-- **装机脚本 first-party 化**：`tray` / `launch` / `restore` `git mv` → `apps/launcher/`；`publish-runtime.ps1` 只从 `apps/launcher` 拷贝（**不再**读 `vendor/`）；`install`/`verify` 遗留脚本停止 ship。
-- **publish 修**：拷贝清单补 `fs-io.mjs`（control-plane 依赖；漏拷会导致控制面挂）。
-- 身份 / 总纲 / 架构 / 安全 / 术语 / CONTRIBUTING 对齐「仅 origin · 当新项目开发」。
+- **装机脚本 first-party 化**：`tray` / `launch` / `restore` → `apps/launcher/`；`publish-runtime.ps1` 只从 first-party 拷贝。
+- **publish 修**：拷贝清单补 `fs-io.mjs`。
+- **删除工作树 `vendor/dreamskin/` + `docs/research/`**（及 sync 脚本 / upstream-sync.json）：考古仅在 git history；不 filter-repo。
 
 ### 工程 / U1（ADR 0004）
 
-- **themes ↔ contracts 对齐**（PR #12）：`packages/themes/theme-contracts-align.test.mjs` + `npm run test:themes-contracts`（自带 `build:contracts`）。把 `validateThemeManifest`/`normalizeColors` 四色输出喂进 `@codex-skin/contracts` 的 `parsePaletteWithSurface`，内置主题全量交叉；`CSS_COLOR_RE` 对 **injector.mjs 源文件** 抓取的 `cssColor` 正则做同源断言（不写第三份字面量）。负例/schema 规模仍由 `test:contracts` / `test:themes` 承担。
-- **硬边界**：themes 仍不静态 import contracts（zod 属开发平面，不进 `versions/<id>/`）。
+- **themes ↔ contracts 对齐**（PR #12）：`theme-contracts-align.test.mjs` + `test:themes-contracts`。
 
 ### 仓库 hygiene（2026-07-22）
 
-- 删 ad-hoc 探针：`probe-dom.mjs` / `probe-dom2.mjs` / `probe-f6.mjs` / `start-watch-now.ps1`；正式路径仅 `probe-session-dom` · `probe-white-flash` · `probe-project-hd`。
-- `docs/overview.md` 改为归档索引；`PROJECT.md` §0 索引瘦身为常读文档 + 指向 overview。
-- 远端清理：已合/空 diff 的 feature·docs 分支删除；仅保留 `main`。
+- 删 ad-hoc 探针：`probe-dom*` / `probe-f6` / `start-watch-now`；正式探针：`probe-session-dom` · `probe-white-flash` · `probe-project-hd`。
+- `docs/overview.md` 文档地图；远端仅 `main`。
 
 ### UX（U3 / U4）
 
 - **U3 换肤成功轻反馈**：`Show-CodexSkinApplyFeedback` + `ui-prefs.json`（`applyBalloonEnabled`，默认真）；托盘菜单可关；换肤面板 / 托盘切换 / CLI `apply` 统一尊重开关；托盘切换补 control-plane kick。
 - **U4 首次入口提示**：`Show-CodexSkinFirstRunGuide` 文案强化「任务栏 Codex / 勿商店磁贴」；`first-run-shown.flag` 一次性；**不**劫持 AUMID。
 - **B 可读性门禁**：`validateThemeManifest` 对 `text`/`surface` 做对比度启发式（≥4.5）；`test:themes` 含低对比拒绝夹具；11 套内置主题实测通过。
-- **视觉回归（开项目不闪白）**：`renderer-inject` 用 palette.surface 亮度强制 dark/light；`appearance:auto` 缺省回落 dark；路由短暂无 `main` 时**不清皮肤**。**根因补丁**：`injector.loadTheme` 此前只透传 `palette.accent`，`surface/text/secondary` 未进 CDP payload → surfaceLuma 无效、暗色主题仍挂 `dream-theme-light`；现全量透传四色。本机 CDP 探针 `probe-white-flash.mjs`：**pass**（dark · body oklab≈0.19 · surfaceLuma≈0.105）。
-- **项目页高清皮肤**：提高 `--dream-task-ambient-opacity`、降低 task immersive 洗白；宽图 task 用 cover 而非「条带 + 低透明度」，对齐上游展示图沉浸感（编码可读仍靠左侧 gradient）。
-- **消息气泡双模式**：`borderless`（默认无边框）/ `card`（圆角卡片描边）；`ui-prefs.bubbleStyle` + 托盘切换 + inject 进 payload。
-- **#25 F6**：探针确认无 `cycleTheme`；`usage.md` / `PAIN-POINTS` 对齐「请用托盘/面板/CLI」。
-- **调研 v5**：`docs/research/2026-07-21-master-research-v5-visual-sync-and-next.md` + PROJECT 索引。
+- **视觉回归（开项目不闪白）**：`renderer-inject` 用 palette.surface 亮度强制 dark/light；`appearance:auto` 缺省回落 dark；路由短暂无 `main` 时**不清皮肤**。全量透传 palette 四色。本机 CDP 探针 `probe-white-flash.mjs`：**pass**。
+- **项目页高清皮肤** / **消息气泡双模式** / **#25 F6** 文档对齐。
 - **BASELINE**：随 HEAD / 安装 runtime 脚本刷新。
 
 ### 安全与控制面

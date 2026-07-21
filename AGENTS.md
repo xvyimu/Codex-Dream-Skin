@@ -9,7 +9,7 @@ Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题。Node ≥20，ESM。
 1. [`docs/PROJECT.md`](docs/PROJECT.md) — 边界、分层、禁止依赖、验收  
 2. 改功能：[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) §C-1 / §C-8  
 3. 实现映射：[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)  
-4. 归档索引：[`docs/overview.md`](docs/overview.md)（research / 审计 / 旧计划）
+4. 归档索引：[`docs/overview.md`](docs/overview.md)（文档地图 / ADR / 审计）
 
 ## 结构
 
@@ -22,7 +22,6 @@ Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题。Node ≥20，ESM。
 | `packages/contracts/` | 开发态 TS 契约（ADR 0004 · 不进 versions/） |
 | `apps/launcher/` | 启动器、切主题、冒烟 · **tray/launch/restore 第一方源** |
 | `themes/` | 主题资源 |
-| `vendor/dreamskin/` | 冻结第三方快照（生产勿 import/ship · NOTICE） |
 | `docs/` | PROJECT / ADR / 痛点；长文见 overview |
 
 ## 命令
@@ -54,16 +53,15 @@ npm run probe:session     # live CDP DOM probe；不进 npm test
 2. `packages/core` ↔ `packages/runtime` **禁止**双向依赖  
 3. 主题写入只经 `packages/themes` + `themes/<id>/`  
 4. 版本只认 `publish-runtime.ps1 -Version`（ADR 0003）；产品包只 stamp payload  
-5. 独立产品线（ADR 0006）：仅 `origin`；`vendor/` 冻结、**publish 禁止读 vendor**  
+5. 独立产品线（ADR 0006）：仅 `origin`；**无** `vendor/` 树；publish 只拷 first-party  
 
 ## 不要做
 
 - 不擅自 `git push` / 改 `main`  
-- 不把业务修复写进 `vendor/`  
+- 不新建 `vendor/` 或重建 `upstream` remote  
 - 不新建第二套 injector/守护  
 - 不主动备份安装态/配置（除非用户要）  
 - 不扩 scope 到无关包  
-- 不重建 `upstream` remote  
 
 ## 完成标准（DoD）
 
