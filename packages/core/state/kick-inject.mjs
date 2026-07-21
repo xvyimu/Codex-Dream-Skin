@@ -5,21 +5,15 @@
  * 控制面不可达时再 spawn injector --once。
  */
 import { spawn } from "node:child_process";
-import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { resolveStudioPaths } from "../constants.mjs";
+import { DEFAULT_CONTROL_PORT, resolveStudioPaths } from "../constants.mjs";
 import { probeCdpPort } from "../cdp/cdp-port.mjs";
+import { isValidPort } from "../cdp/cdp-helpers.mjs";
+import { pathExists, readJsonFile, readTextTrim } from "./state-io.mjs";
 
 const MAX_CAPTURE_CHARS = 8_000;
-
-async function pathExists(p) {
-  try {
-    await access(p);
-    return true;
-  } catch {
-    return false;
-  }
-}
+/** Control-plane kick: prefer resolved port, then default only (avoid 9337–9340 scan storm). */
+const CONTROL_KICK_FALLBACK_PORTS = [DEFAULT_CONTROL_PORT];
 
 function appendCapped(buffer, chunk) {
   if (buffer.length >= MAX_CAPTURE_CHARS) return buffer;
@@ -27,11 +21,6 @@ function appendCapped(buffer, chunk) {
   return next.length > MAX_CAPTURE_CHARS
     ? `${next.slice(0, MAX_CAPTURE_CHARS)}\n…[truncated]`
     : next;
-}
-
-async function readJsonFile(path) {
-  const raw = await readFile(path, "utf8");
-  return JSON.parse(raw.replace(/^﻿/, ""));
 }
 
 async function resolveInjectorPath(state, installRoot) {
@@ -67,35 +56,38 @@ function resolveNodePath(state) {
 }
 
 async function resolveControlPort(state, stateRoot) {
-  if (Number.isInteger(Number(state?.controlPort)) && Number(state.controlPort) >= 1024) {
-    return Number(state.controlPort);
-  }
+  const fromState = Number(state?.controlPort);
+  if (isValidPort(fromState)) return fromState;
   try {
     const p = join(stateRoot, "control.port");
     if (await pathExists(p)) {
-      const n = Number((await readFile(p, "utf8")).trim());
-      if (Number.isInteger(n) && n >= 1024) return n;
+      const n = Number(await readTextTrim(p));
+      if (isValidPort(n)) return n;
     }
   } catch {
     // ignore
   }
-  return 9336;
+  return DEFAULT_CONTROL_PORT;
 }
 
 async function resolveControlToken(stateRoot) {
   try {
     const p = join(stateRoot, "control.token");
     if (!(await pathExists(p))) return null;
-    const token = (await readFile(p, "utf8")).trim();
+    const token = await readTextTrim(p);
     return token || null;
   } catch {
     return null;
   }
 }
 
+/**
+ * Try control-plane /kick. Prefer known port; only fall back to DEFAULT_CONTROL_PORT.
+ * Avoids scanning 9337–9340 on every apply (was up to 5 extra timeouts when plane is down).
+ */
 async function kickViaControlPlane(controlPort, timeoutMs = 2500, token = null) {
-  const ports = [controlPort, 9336, 9337, 9338, 9339, 9340].filter(
-    (p, i, arr) => Number.isInteger(p) && p >= 1024 && arr.indexOf(p) === i,
+  const ports = [controlPort, ...CONTROL_KICK_FALLBACK_PORTS].filter(
+    (p, i, arr) => isValidPort(p) && arr.indexOf(p) === i,
   );
   const headers = { "Content-Type": "application/json" };
   if (token) headers["x-codex-skin-token"] = token;
@@ -176,7 +168,7 @@ export async function kickThemeInjectNow({
     (typeof state.themeDir === "string" && state.themeDir.trim()) ||
     join(stateRoot, "active-theme");
 
-  if (!Number.isInteger(port) || port < 1024 || port > 65535 || !browserId) {
+  if (!isValidPort(port) || !browserId) {
     return { ok: false, skipped: true, reason: "incomplete-state", port };
   }
   if (!(await pathExists(themeDir))) {
