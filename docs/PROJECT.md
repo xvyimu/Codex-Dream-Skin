@@ -20,13 +20,11 @@
 | 产品线身份 | ADR 0006 · §10 · GITHUB_IDENTITY | `NOTICE` · 冻结 `vendor/` |
 | 排查故障 | §11 诊断矩阵 · PAIN-POINTS | `doctor` / smoke |
 
-**相关文档索引**
+**相关文档索引**（日常只读左栏；长文调研 / AUDIT / prompts 见 [`overview.md`](./overview.md) 归档区）
 
 | 文档 | 职责 |
 |------|------|
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | 目录、调用链、源码映射（实现侧） |
-| [`AUDIT-2026-07-20.md`](./AUDIT-2026-07-20.md) | 全面检查报告（边界 · 模块 · 发现项 · hygiene） |
-| [`plans/residual-g1-g3-g4-g5-2026-07-20.md`](./plans/residual-g1-g3-g4-g5-2026-07-20.md) | 残差 G1/G3/G4/G5 多方案对比与推荐组合 |
 | [`CHANGELOG.md`](./CHANGELOG.md) | 版本时间线 |
 | [`PAIN-POINTS.md`](./PAIN-POINTS.md) | 已知痛点与状态 |
 | [`GLOSSARY.md`](./GLOSSARY.md) | 领域术语 |
@@ -35,22 +33,14 @@
 | [`usage.md`](./usage.md) | 用户侧使用说明 |
 | [`dual-open-policy.md`](./dual-open-policy.md) | 入口纪律与 kick 降级 |
 | [`CONTRIBUTING.md`](./CONTRIBUTING.md) | PR 必答 7 问 · 8 类规范 · 禁止事项速查表 |
-| [`plans/task-cards-2026-07-21.md`](./plans/task-cards-2026-07-21.md) | 维护任务卡（P1–P3） |
-| [`prompts/agent-maintain-task-cards-zh.md`](./prompts/agent-maintain-task-cards-zh.md) | 维护 Agent 可粘贴提示词 |
-| [`research/2026-07-21-peer-landscape-and-architecture.md`](./research/2026-07-21-peer-landscape-and-architecture.md) | 同类项目对照 · 技术债 · 架构优化调研（长文） |
-| [`research/2026-07-21-github-peer-matrix.md`](./research/2026-07-21-github-peer-matrix.md) | GitHub 细矩阵 · C/D/E 分层 |
-| [`adr/0004-engineering-modernization-u1.md`](./adr/0004-engineering-modernization-u1.md) | **Accepted** 工程现代化 / 依赖双平面 · 实施中 |
-| [`adr/0005-thin-product-shell-u3.md`](./adr/0005-thin-product-shell-u3.md) | **Proposed** 薄产品壳（不替换守护） |
-| [`adr/0006-independent-product-line.md`](./adr/0006-independent-product-line.md) | **Accepted** 独立产品线 · 无 upstream remote |
+| [`adr/0003-single-version-source.md`](./adr/0003-single-version-source.md) | 单一版本源（publish `-Version`） |
+| [`adr/0004-engineering-modernization-u1.md`](./adr/0004-engineering-modernization-u1.md) | **Accepted** 工程现代化 / 依赖双平面 |
+| [`adr/0005-thin-product-shell-u3.md`](./adr/0005-thin-product-shell-u3.md) | **Proposed** 薄产品壳 |
+| [`adr/0006-independent-product-line.md`](./adr/0006-independent-product-line.md) | **Accepted** 独立产品线 · 仅 origin |
 | [`plans/u1-u3-two-week-plan-2026-07-21.md`](./plans/u1-u3-two-week-plan-2026-07-21.md) | U1+U3 两周排期 |
-| [`research/2026-07-21-progress-aligned-debt-and-portfolio.md`](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) | 进度对齐：已关债 · 多方案组合 · 打磨卡片（长文） |
-| [`research/2026-07-21-integrated-master-research.md`](./research/2026-07-21-integrated-master-research.md) | 整合总册（中期） |
-| [`research/2026-07-21-master-research-v2-frozen.md`](./research/2026-07-21-master-research-v2-frozen.md) | 选代入口 v2（四包后） |
-| [`research/2026-07-21-master-research-v3-ux-visual.md`](./research/2026-07-21-master-research-v3-ux-visual.md) | 选代入口 v3：工程冻结 + UX/视觉升级方案库 |
-| [`research/2026-07-21-master-research-v4-u3u4-product.md`](./research/2026-07-21-master-research-v4-u3u4-product.md) | 选代入口 v4：U3/U4 后进度 + 五件套 + 方案评分 |
-| [`research/2026-07-21-master-research-v5-visual-sync-and-next.md`](./research/2026-07-21-master-research-v5-visual-sync-and-next.md) | **选代入口 v5**：闪白修后 · ahead 交付 · 市场/架构/规范/路线图/API + 方案评分 |
-| [`adr/`](./adr/) | 架构决策（0001 合并 · 0002 废止 · 0003 版本源 · 0006 独立） |
-| 根目录 `CLAUDE.md` | Agent 短索引 |
+| [`plans/task-cards-2026-07-21.md`](./plans/task-cards-2026-07-21.md) | 维护任务卡（历史完成） |
+| [`overview.md`](./overview.md) | **归档索引**：research v1–v7 · peer 矩阵 · AUDIT/SCAN · prompts |
+| 根目录 `CLAUDE.md` / `AGENTS.md` | Agent 短索引（意图对齐） |
 
 ---
 
@@ -480,7 +470,7 @@ paused/locked: false（正常使用时）
 |------|------|------|
 | home | `node scripts\windows\probe-session-dom.mjs`（或安装树 `node "%LOCALAPPDATA%\Programs\CodexDreamSkin\probe-session-dom.mjs"`） | JSON 含 `"ok": true`、`"dreamStyle": true`、`"pass": true`；exit 0（无 page → exit 2，先开 Codex） |
 | conversation | 打开任一对话后再跑同上 | `"conversationPass": true` 且 exit 0；失败 exit 3 |
-| 可选辅助 | `node scripts\windows\probe-dom.mjs` | home shell 标记如 `dreamStyle` / `mainSurface` |
+| 视觉回归（可选） | `node scripts\windows\probe-white-flash.mjs` · `probe-project-hd.mjs` | 断言型 pass / exit 0；需 live CDP |
 | 静态（可选） | `Test-Path scripts\windows\probe-session-dom.mjs` | `True` |
 
 脚本契约见 `scripts/windows/probe-session-dom.mjs`（`pass` / `conversationPass` / exit）。  

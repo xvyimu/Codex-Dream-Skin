@@ -1,49 +1,73 @@
-# Codex Dream Skin — 文档索引
+# Codexveil — 文档索引
 
-## 主调研报告（增量升级，最新在前）
+> **日常只读**：根目录 `CLAUDE.md` / `AGENTS.md` → [`PROJECT.md`](./PROJECT.md) → [`ARCHITECTURE.md`](./ARCHITECTURE.md)。  
+> 本页 = **归档与长文入口**；不替代 PROJECT 约束。
 
-| 版本 | 日期 | 链接 | 要点 |
-|------|------|------|------|
-| **v7** | 2026-07-21 | [v7-gate-hygiene-and-ux](./research/2026-07-21-master-research-v7-gate-hygiene-and-ux.md) | squash 合 main · 双 CI 绿 · probe-project-hd **断言化** · RELEASE-EVIDENCE CI URL · BASELINE 对齐 · surfaceLuma `#rrggbb` 边界 |
-| v6 | 2026-07-21 | [v6-palette-root-and-hd-bubble](./research/2026-07-21-master-research-v6-palette-root-and-hd-bubble.md) | 闪白根因补丁 48b5bae + HD art + 气泡双模式 0326abb · v5 假关闭教训 · BASELINE 自动生成（过程中曾 ahead，已 squash 归零） |
-| v5 | 2026-07-21 | [v5-visual-sync-and-next](./research/2026-07-21-master-research-v5-visual-sync-and-next.md) | 闪白表面修 e01d0ef + ahead 4 + 五件套首版 |
-| v4 | 2026-07-21 | [v4-u3u4-product](./research/2026-07-21-master-research-v4-u3u4-product.md) | U3/U4 产品视角 |
-| v3 | 2026-07-21 | [v3-ux-visual](./research/2026-07-21-master-research-v3-ux-visual.md) | UX/视觉 |
-| v2 | 2026-07-21 | [v2-frozen](./research/2026-07-21-master-research-v2-frozen.md) | 冻结 |
-| v1 | 2026-07-21 | [integrated-master-research](./research/2026-07-21-integrated-master-research.md) | 集成首版 |
+## 0. 当前真相（2026-07-22）
 
-## 同类对照与债务
+| 项 | 值 |
+|----|-----|
+| GitHub | [xvyimu/Codexveil](https://github.com/xvyimu/Codexveil) · **非 fork** · 仅 `origin` |
+| 产品线 | ADR **0006** 独立 · 安装名 **CodexDreamSkin** |
+| 主线 runtime | **1.3.25** · publish 权威见 ADR 0003 |
+| 装机脚本 | tray / launch / restore ∈ `apps/launcher/`（不读 vendor） |
+| U1 | themes↔contracts 交叉测已合 main（PR #12） |
+| 选代入口 | 工程债/U1 以 ADR 0004 + [`plans/u1-u3-two-week-plan`](./plans/u1-u3-two-week-plan-2026-07-21.md) 为准；research v7 及以前为**冻结考古** |
 
-- [**github-peer-matrix（2026-07-21）**](./research/2026-07-21-github-peer-matrix.md) — GitHub 细矩阵：引擎/编辑器/标准/镜像反例 · 可借鉴/不要抄 · 复现命令
-- [peer-landscape-and-architecture](./research/2026-07-21-peer-landscape-and-architecture.md) — 上游/Styler/awesome 架构长文
-- [progress-aligned-debt-and-portfolio](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) — 进度对齐债务 F1-F6
+## 1. 核心文档（常读）
 
-## 核心文档
+- [PROJECT.md](./PROJECT.md) — 边界 · 分层 · 依赖 · 验收 · 身份
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — 实现映射
+- [CHANGELOG.md](./CHANGELOG.md) · [PAIN-POINTS.md](./PAIN-POINTS.md) · [CONTRIBUTING.md](./CONTRIBUTING.md)
+- [GLOSSARY.md](./GLOSSARY.md) · [SECURITY.md](./SECURITY.md) · [usage.md](./usage.md) · [dual-open-policy.md](./dual-open-policy.md)
+- [RELEASE-EVIDENCE.md](./RELEASE-EVIDENCE.md) · [BASELINE.generated.md](./BASELINE.generated.md)（`write-baseline.ps1` 生成）
+- [design-tokens.md](./design-tokens.md) · [contracts/post-update-report.md](./contracts/post-update-report.md)
 
-- [PROJECT.md](./PROJECT.md) — 项目总纲（§3.2 依赖规则 / §12 路线图）
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — 四层模型 + 包契约 + 主题 schema
-- [CHANGELOG.md](./CHANGELOG.md) — 版本历史
-- [PAIN-POINTS.md](./PAIN-POINTS.md) — 痛点合集（25 项）
-- [CONTRIBUTING.md](./CONTRIBUTING.md) — 贡献规范 §C-1–C-9
-- [GLOSSARY.md](./GLOSSARY.md) — 术语表
-- [SECURITY.md](./SECURITY.md) — 威胁模型
-- [usage.md](./usage.md) — 使用说明
-- [dual-open-policy.md](./dual-open-policy.md) — 双开策略
-- [RELEASE-EVIDENCE.md](./RELEASE-EVIDENCE.md) — 发版证据清单
-- [BASELINE.generated.md](./BASELINE.generated.md) — 自动生成基线（write-baseline.ps1）
+## 2. ADR
 
-## ADR
+| ID | 状态 | 摘要 |
+|----|------|------|
+| [0001](./adr/0001-merge-product-line.md) | Accepted | 单产品线 |
+| [0002](./adr/0002-upstream-sync-policy.md) | **Superseded by 0006** | 旧在线同步（已废止） |
+| [0003](./adr/0003-single-version-source.md) | Accepted | 单一版本源 |
+| [0004](./adr/0004-engineering-modernization-u1.md) | Accepted · 实施中 | 双平面 · contracts |
+| [0005](./adr/0005-thin-product-shell-u3.md) | Proposed | 薄产品壳 |
+| [0006](./adr/0006-independent-product-line.md) | Accepted | 独立产品线 · first-party 装机脚本 |
 
-- [0001-merge-product-line](./adr/0001-merge-product-line.md) — 合并 heige + DreamSkin 单产品线
-- [0002-upstream-sync-policy](./adr/0002-upstream-sync-policy.md) — 上游 vendor 镜像 + 人工 promote
-- [0003-single-version-source](./adr/0003-single-version-source.md) — 单一版本源
-- [0004-engineering-modernization-u1](./adr/0004-engineering-modernization-u1.md) — **Accepted** U1：双平面依赖 · TS/contracts · probe-kit · stamp · Vitest
-- [0005-thin-product-shell-u3](./adr/0005-thin-product-shell-u3.md) — **Proposed** U3：薄 Tauri/L1 壳，不替换 watch 守护
-- 排期：[u1-u3-two-week-plan-2026-07-21](./plans/u1-u3-two-week-plan-2026-07-21.md) · 分支 `feat/u1-workspace`
+排期：[u1-u3-two-week-plan-2026-07-21](./plans/u1-u3-two-week-plan-2026-07-21.md)（历史分支名 `feat/u1-workspace` 已删；工作在 `main`）
 
-## 决策与计划
+## 3. 计划与决策（有效 / 历史）
 
-- [task-cards-2026-07-21](./plans/task-cards-2026-07-21.md) — 12 张任务卡（均已完成）
-- [codesign-decision-2026-07-21](./plans/codesign-decision-2026-07-21.md) — 签名 No-Go 决策
-- [residual-g1-g3-g4-g5-2026-07-20](./plans/residual-g1-g3-g4-g5-2026-07-20.md) — 残差加固
-- [upstream-promote-decision-2026-07-21](./plans/upstream-promote-decision-2026-07-21.md) — 上游 promote 决策
+- [task-cards-2026-07-21](./plans/task-cards-2026-07-21.md) — 任务卡（多数已完成）
+- [codesign-decision-2026-07-21](./plans/codesign-decision-2026-07-21.md) — 签名 No-Go
+- [residual-g1-g3-g4-g5-2026-07-20](./plans/residual-g1-g3-g4-g5-2026-07-20.md) — 残差加固（已落地）
+- [upstream-promote-decision-2026-07-21](./plans/upstream-promote-decision-2026-07-21.md) — **历史**：promote 决策；现以 0006 为准（无在线 sync）
+
+## 4. 调研归档（只读 · 最新在前）
+
+| 版本 | 链接 | 要点 |
+|------|------|------|
+| **v7** | [v7-gate-hygiene-and-ux](./research/2026-07-21-master-research-v7-gate-hygiene-and-ux.md) | 门禁/探针断言化 · RELEASE-EVIDENCE |
+| v6 | [v6-palette-root-and-hd-bubble](./research/2026-07-21-master-research-v6-palette-root-and-hd-bubble.md) | 闪白根因 · HD art · 气泡 |
+| v5–v1 | [v5](./research/2026-07-21-master-research-v5-visual-sync-and-next.md) · [v4](./research/2026-07-21-master-research-v4-u3u4-product.md) · [v3](./research/2026-07-21-master-research-v3-ux-visual.md) · [v2](./research/2026-07-21-master-research-v2-frozen.md) · [v1](./research/2026-07-21-integrated-master-research.md) | 迭代考古 |
+| peer | [github-peer-matrix](./research/2026-07-21-github-peer-matrix.md) · [peer-landscape](./research/2026-07-21-peer-landscape-and-architecture.md) · [progress-aligned-debt](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) | 同类对照 |
+
+## 5. 审计 / 扫描 / 报告（归档）
+
+- [AUDIT-2026-07-20](./AUDIT-2026-07-20.md) · [SCAN-OPTIMIZE-2026-07-20](./SCAN-OPTIMIZE-2026-07-20.md)
+- [audit/v6-advance](./audit/2026-07-21-v6-advance.md) · [audit/v6-review](./audit/2026-07-21-v6-review.md)
+- [reports/five-layer-internal-opt](./reports/2026-07-21-five-layer-internal-opt-report.md)
+
+## 6. Agent 提示词 / 证据脚手架
+
+- [prompts/](./prompts/) — maintain / full-scan / continue-five-layer（粘贴用，非规范）
+- [evidence/](./evidence/) — 发版探针脚手架；`runs/*.json` gitignore
+
+## 7. 退役工件
+
+| 路径 | 状态 |
+|------|------|
+| `scripts/windows/sync-upstream-assets.ps1` | exit 2 · ADR 0006 |
+| `docs/upstream-sync.json` | `status: retired` |
+| `vendor/dreamskin/` | 冻结快照 · 不 ship（NOTICE） |
+| ad-hoc `probe-dom*.mjs` / `probe-f6` / `start-watch-now` | **已删**（hygiene）；用 `probe-session-dom` / `probe-white-flash` / `probe-project-hd` |
