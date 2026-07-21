@@ -12,8 +12,13 @@ import { isValidPort } from "../cdp/cdp-helpers.mjs";
 import { pathExists, readJsonFile, readTextTrim } from "./state-io.mjs";
 
 const MAX_CAPTURE_CHARS = 8_000;
-/** Control-plane kick: prefer resolved port, then default only (avoid 9337–9340 scan storm). */
-const CONTROL_KICK_FALLBACK_PORTS = [DEFAULT_CONTROL_PORT];
+/**
+ * Control-plane listen range mirrors runtime control-plane PORT_SCAN (9336..9346).
+ * Wide scan only when state/file did not publish a port (legacy / partial state).
+ */
+const CONTROL_PLANE_SCAN_PORTS = Object.freeze(
+  Array.from({ length: 11 }, (_, i) => DEFAULT_CONTROL_PORT + i),
+);
 
 function appendCapped(buffer, chunk) {
   if (buffer.length >= MAX_CAPTURE_CHARS) return buffer;
@@ -55,19 +60,22 @@ function resolveNodePath(state) {
   return process.execPath;
 }
 
+/**
+ * @returns {Promise<{ port: number, source: "state" | "file" | "default" }>}
+ */
 async function resolveControlPort(state, stateRoot) {
   const fromState = Number(state?.controlPort);
-  if (isValidPort(fromState)) return fromState;
+  if (isValidPort(fromState)) return { port: fromState, source: "state" };
   try {
     const p = join(stateRoot, "control.port");
     if (await pathExists(p)) {
       const n = Number(await readTextTrim(p));
-      if (isValidPort(n)) return n;
+      if (isValidPort(n)) return { port: n, source: "file" };
     }
   } catch {
     // ignore
   }
-  return DEFAULT_CONTROL_PORT;
+  return { port: DEFAULT_CONTROL_PORT, source: "default" };
 }
 
 async function resolveControlToken(stateRoot) {
@@ -82,13 +90,25 @@ async function resolveControlToken(stateRoot) {
 }
 
 /**
- * Try control-plane /kick. Prefer known port; only fall back to DEFAULT_CONTROL_PORT.
- * Avoids scanning 9337–9340 on every apply (was up to 5 extra timeouts when plane is down).
+ * Build kick port list:
+ * - state/file source → trust that port (+ default if different). Fast path.
+ * - default source only → scan 9336..9346 once (control-plane bind range).
  */
-async function kickViaControlPlane(controlPort, timeoutMs = 2500, token = null) {
-  const ports = [controlPort, ...CONTROL_KICK_FALLBACK_PORTS].filter(
-    (p, i, arr) => isValidPort(p) && arr.indexOf(p) === i,
-  );
+function buildControlKickPorts(resolvedPort, source) {
+  if (source === "state" || source === "file") {
+    return [resolvedPort, DEFAULT_CONTROL_PORT].filter(
+      (p, i, arr) => isValidPort(p) && arr.indexOf(p) === i,
+    );
+  }
+  return CONTROL_PLANE_SCAN_PORTS.filter(isValidPort);
+}
+
+/**
+ * Try control-plane /kick.
+ * Wide scan only when no published control port (see buildControlKickPorts).
+ */
+async function kickViaControlPlane(controlPort, timeoutMs = 2500, token = null, source = "default") {
+  const ports = buildControlKickPorts(controlPort, source);
   const headers = { "Content-Type": "application/json" };
   if (token) headers["x-codex-skin-token"] = token;
   for (const port of ports) {
@@ -176,12 +196,16 @@ export async function kickThemeInjectNow({
   }
 
   if (preferControlPlane) {
-    const controlPort = await resolveControlPort(state, stateRoot);
+    const { port: controlPort, source: controlSource } = await resolveControlPort(
+      state,
+      stateRoot,
+    );
     const token = await resolveControlToken(stateRoot);
     const viaCp = await kickViaControlPlane(
       controlPort,
       Math.min(timeoutMs, 4000),
       token,
+      controlSource,
     );
     if (viaCp) return viaCp;
   }
