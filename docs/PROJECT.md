@@ -17,7 +17,7 @@
 | 新人上手 | §1 产品边界 · §2 分层 | §7 开发命令 · §9 验收 |
 | 改功能 | §3 模块契约 · §4 依赖规则 | §5 关键路径 · §8 任务模板 |
 | 发版 | §6 发布与版本 | ADR 0003 · CHANGELOG |
-| 产品线身份 | ADR 0006 · §10 · GITHUB_IDENTITY | `NOTICE` · 冻结 `vendor/` |
+| 产品线身份 | ADR 0006 · §10 · GITHUB_IDENTITY | 无 `vendor/` · 无 `docs/research/` |
 | 排查故障 | §11 诊断矩阵 · PAIN-POINTS | `doctor` / smoke |
 
 **相关文档索引**（日常只读左栏；长文调研 / AUDIT / prompts 见 [`overview.md`](./overview.md) 归档区）
@@ -39,7 +39,7 @@
 | [`adr/0006-independent-product-line.md`](./adr/0006-independent-product-line.md) | **Accepted** 独立产品线 · 仅 origin |
 | [`plans/u1-u3-two-week-plan-2026-07-21.md`](./plans/u1-u3-two-week-plan-2026-07-21.md) | U1+U3 两周排期 |
 | [`plans/task-cards-2026-07-21.md`](./plans/task-cards-2026-07-21.md) | 维护任务卡（历史完成） |
-| [`overview.md`](./overview.md) | **归档索引**：research v1–v7 · peer 矩阵 · AUDIT/SCAN · prompts |
+| [`overview.md`](./overview.md) | 文档地图 · ADR/计划/审计入口 |
 | 根目录 `CLAUDE.md` / `AGENTS.md` | Agent 短索引（意图对齐） |
 
 ---
@@ -162,8 +162,7 @@
 | `packages/core-win` | PowerShell 5.1 | 无 | launcher 共享库：日志/托盘/焦点/state IO/runtime 解析 | 主题 schema；CDP 协议实现 |
 | `apps/launcher` | PowerShell | dot-source core-win | 薄入口：open / check / switch / smoke / kick · **tray / launch / restore 第一方源** | 业务算法（只编排） |
 | `themes/` | JSON + 图 | 无 | 内置主题源（heige 格式） | 运行时逻辑 |
-| `scripts/windows` | PS / mjs | 读仓库 | publish、import、探针（`publish` **不**读 vendor） | 常驻守护 |
-| `vendor/dreamskin` | 冻结第三方快照 | 只读 | 离线对照（NOTICE） | **任何**运行时引用 / 自动同步 / **publish 拷贝** |
+| `scripts/windows` | PS / mjs | 读仓库 | publish、import、探针 | 常驻守护 |
 
 ### 3.2 硬性依赖规则（框架限定 · 违反即拒合）
 
@@ -182,8 +181,8 @@
   业务脚本硬编码绝对路径（必须 resolveStudioPaths / Get-CodexSkin*Root）
   第二条 heige --once / legacy-inject 注入旁路
   同时运行两个 injector
-  生产路径 import vendor/dreamskin
-  publish-runtime.ps1 从 vendor/ 拷贝任何文件进 versions/ 或 programRoot
+  重新引入 vendor/ 或从第三方仓自动 sync 进工作树
+  publish-runtime.ps1 从非 first-party 路径拷贝进 versions/ 或 programRoot
 ```
 
 **依赖双平面（ADR 0004 Accepted）**
@@ -338,13 +337,14 @@ publish-runtime.ps1 -RepoRoot D:\orca\codex-skin [-Version x.y.z]
   → （可选）import themes / post-update
 ```
 
-### 5.4 第三方快照（ADR 0006 · 无自动同步）
+### 5.4 已删除：vendor 与 research 考古树
 
 ```text
-vendor/dreamskin/          冻结离线快照（NOTICE）
-sync-upstream-assets.ps1   已退役（exit 2 · 指向 ADR 0006）
-docs/upstream-sync.json    status: retired
-可选：对某资产做人工 diff → 一次性搬进 packages/runtime（非例行）
+（2026-07-22）工作树不再包含：
+  vendor/dreamskin/          已删除（历史快照仅在 git history）
+  docs/research/             已删除（调研长文仅在 git history）
+  sync-upstream-assets.ps1   已删除
+  docs/upstream-sync.json    已删除
 ```
 
 ---
@@ -448,7 +448,6 @@ powershell -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\codex-ski
 | core / themes 逻辑 | `doctor` + 相关 cli 子命令 · `npm run test:themes` |
 | runtime / CSS / renderer | `publish` + smoke +（有条件）verify / live probe |
 | launcher / core-win | open 路径手动或 check-and-fix exit 0 |
-| 可选 vendor 资产移植 | 人工 diff · ADR 0006 · 不重建 remote |
 
 ### 9.3 doctor 健康画像（参考基线 2026-07-20）
 
@@ -486,8 +485,7 @@ paused/locked: false（正常使用时）
 | ~~upstream~~ | — | **已删除**；禁止再 `git remote add` 第三方皮肤仓作上游 |
 
 - 本仓 **不是 fork**（GitHub `isFork: false`）；按**新项目**演进。  
-- `vendor/dreamskin/` = 冻结第三方快照（`NOTICE`），**不**自动同步。  
-- 退役：`sync-upstream-assets.ps1` · `docs/upstream-sync.json`（`status: retired`）。  
+- 工作树**无** `vendor/`、**无** `docs/research/`（考古只在 git history）。  
 - 身份卡：[`GITHUB_IDENTITY.md`](../GITHUB_IDENTITY.md) · ADR：[`0006-independent-product-line.md`](./adr/0006-independent-product-line.md)。
 
 ---
@@ -573,7 +571,6 @@ codex-skin/
 │   └── core-win/            # L1/L2 Windows 共享库
 ├── scripts/windows/         # 发布 · 探针 · E2E
 ├── themes/                  # 11 套内置主题源（含 preset-arina-hashimoto）
-├── vendor/dreamskin/        # 冻结第三方快照（NOTICE）
 ├── docs/                    # 本文件与 ADR 等
 ├── package.json             # bin: codex-skin → cli.mjs
 └── CLAUDE.md                # Agent 短索引
@@ -602,7 +599,7 @@ codex-skin/
   2）runtime 自包含与 core 双向隔离；  
   3）主题写入只经 `packages/themes`；  
   4）版本只认 publish `-Version`；  
-  5）独立产品线：仅 origin · 无 upstream · vendor 冻结（ADR 0006）。  
+  5）独立产品线：仅 origin · 无 vendor/research 工作树（ADR 0006）。  
 
 违反以上任一条件的 PR / Agent 产出：**默认拒绝合并**，先回到本文件 §3 / §8 改任务边界。
 
@@ -617,7 +614,7 @@ codex-skin/
 | 用户主题 | 11 套（import-themes · list 去重） |
 | 热切换 | kick ~55–80ms 量级 |
 | Git | `main`：以 `git rev-parse HEAD` 为准；审计见 AUDIT-2026-07-20 |
-| 产品线身份 | ADR 0006 · 仅 `origin` · vendor 冻结 |
+| 产品线身份 | ADR 0006 · 仅 `origin` · 无 vendor/research 树 |
 | 产品包 | Release [v1.3.25](https://github.com/xvyimu/Codexveil/releases/tag/v1.3.25)；本地 `Build-ProductPackage` → dist（gitignore） |
 | package.json | `"version": "1.3.25"`（产品线元数据；stamp 权威仍是 publish `-Version`） |
 | 主题门禁 | `npm run test:themes` |

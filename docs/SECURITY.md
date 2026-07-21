@@ -58,9 +58,9 @@ Out-of-scope examples:
 | Post-update failure observability | `docs/contracts/post-update-report.md` |
 | Release evidence (DOM) | `docs/evidence/` · `Run-ReleaseProbes.ps1` (real dumps gitignored) |
 
-## Vendor snapshot
+## Third-party material
 
-`vendor/dreamskin/` is a **frozen third-party snapshot** (not an active upstream). It is not re-licensed by this document; see root `NOTICE` and ADR 0006. Production paths must not import `vendor/`. `publish-runtime.ps1` must not copy from `vendor/` into `versions/<id>/` or programRoot — load-bearing tray/launch/restore live under `apps/launcher/`.
+This repository does **not** ship a `vendor/` tree. All install-plane sources are first-party under `apps/` / `packages/` / `themes/`. See root `NOTICE` and ADR 0006.
 
 ## Related
 

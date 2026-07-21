@@ -39,8 +39,6 @@ codex-skin/
 │   └── core-win/            # PowerShell 共享库（launcher-ui / common / theme）
 ├── scripts/windows/         # 发布 / 产品包 / 导入主题 / 快捷方式 / 开发探针 / E2E
 ├── themes/                  # 内置主题源（heige 格式，11 套；含 preset-arina-hashimoto）
-├── vendor/
-│   └── dreamskin/           # 冻结第三方快照（NOTICE · 生产勿 import）
 └── docs/                    # 本文件所在
 ```
 
@@ -184,7 +182,6 @@ Install / Uninstall 只 stamp 安装树。见 ADR 0003 产品包表。
 | `themes/*` | heige 内置主题 + preset-arina-hashimoto（11 套） |
 | `apps/launcher/*` | DreamSkin 入口脚本 · **tray / launch / restore 第一方源** |
 | `apps/native/CodexFastLaunch` | 本仓原生任务栏入口 |
-| `vendor/dreamskin/*` | 冻结第三方快照（NOTICE · 非在线上游 · **不 ship**） |
 
 ---
 
@@ -230,7 +227,6 @@ Install / Uninstall 只 stamp 安装树。见 ADR 0003 产品包表。
 
 - `PROJECT.md` — **项目总纲**（分层 · 模块契约 · 验收 · 路线图）
 - `overview.md` — 调研报告索引（v1–v6）
-- `research/2026-07-21-master-research-v6-palette-root-and-hd-bubble.md` — v6 根因与契约背景
 - `audit/2026-07-21-v6-review.md` · `audit/2026-07-21-v6-advance.md` — v6 无证不信审核 / 推进
 - `AUDIT-2026-07-20.md` — 全面检查报告
 - `README.md` — 项目入口
