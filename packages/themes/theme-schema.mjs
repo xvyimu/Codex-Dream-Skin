@@ -101,6 +101,58 @@ function normalizeColors(colors, palette) {
 }
 
 /**
+ * sRGB relative luminance (WCAG). hex must be #RRGGBB.
+ * Heuristic for theme gates — not a full WCAG page audit.
+ */
+export function relativeLuminance(hex) {
+  if (typeof hex !== "string" || !HEX_COLOR.test(hex)) {
+    throw new Error("relativeLuminance expects #RRGGBB");
+  }
+  const n = Number.parseInt(hex.slice(1), 16);
+  const channels = [n >> 16, (n >> 8) & 255, n & 255].map((value) => {
+    const channel = value / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+/** WCAG contrast ratio between two #RRGGBB colors. */
+export function contrastRatio(hexA, hexB) {
+  const a = relativeLuminance(hexA);
+  const b = relativeLuminance(hexB);
+  const lighter = Math.max(a, b);
+  const darker = Math.min(a, b);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/**
+ * U2/B gate: body text vs surface must stay readable in coding UIs.
+ * Default 4.5 ≈ WCAG AA normal text. Accent is decorative — not gated here.
+ */
+export function assertReadableTextSurface(
+  colors,
+  { minRatio = 4.5 } = {},
+) {
+  if (!isRecord(colors)) {
+    throw new Error("assertReadableTextSurface expects colors object");
+  }
+  const text = colors.text;
+  const surface = colors.surface;
+  if (typeof text !== "string" || typeof surface !== "string") {
+    throw new Error("colors.text and colors.surface are required");
+  }
+  const ratio = contrastRatio(text, surface);
+  if (!(ratio >= minRatio)) {
+    throw new Error(
+      `text/surface contrast ${ratio.toFixed(2)} < ${minRatio} (text=${text} surface=${surface})`,
+    );
+  }
+  return ratio;
+}
+
+/**
  * Accept heige `copy` or DreamSkin brandSubtitle/tagline/quote fields.
  */
 function normalizeCopy(input) {
@@ -184,6 +236,8 @@ export function validateThemeManifest(input) {
   // Accept both heige (`hero`) and DreamSkin catalog (`image`) field names.
   const heroSource = input.hero ?? input.image;
   const colors = normalizeColors(input.colors, input.palette);
+  // B · readability: reject obviously unreadable text-on-surface pairs.
+  assertReadableTextSurface(colors);
   const copy = normalizeCopy(input);
   const art = normalizeArt(input.art);
   const appearance =

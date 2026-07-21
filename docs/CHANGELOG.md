@@ -10,6 +10,14 @@
 
 > 产品线版本仍为 **1.3.25**；安装态 runtimeId 以 doctor 为准（例 `1.3.25-107b0e`）。下列为扫描落地 + 任务卡收口，**未**改 SKIN_VERSION 产品线号。
 
+### UX（U3 / U4）
+
+- **U3 换肤成功轻反馈**：`Show-CodexSkinApplyFeedback` + `ui-prefs.json`（`applyBalloonEnabled`，默认真）；托盘菜单可关；换肤面板 / 托盘切换 / CLI `apply` 统一尊重开关；托盘切换补 control-plane kick。
+- **U4 首次入口提示**：`Show-CodexSkinFirstRunGuide` 文案强化「任务栏 Codex / 勿商店磁贴」；`first-run-shown.flag` 一次性；**不**劫持 AUMID。
+- **B 可读性门禁**：`validateThemeManifest` 对 `text`/`surface` 做对比度启发式（≥4.5）；`test:themes` 含低对比拒绝夹具；11 套内置主题实测通过。
+- **调研 v4**：`docs/research/2026-07-21-master-research-v4-u3u4-product.md`（进度/市场/架构/规范/路线图/API/方案评分）。
+- **BASELINE**：`write-baseline.ps1` → shortHead=`eff1170` · expectedRuntimeId 随安装 `1.3.25-c44358`。
+
 ### 安全与控制面
 
 - **SEC-01**：control-plane mutating POST 强制 `x-codex-skin-token`；GET `/health` 免 token；kick-inject / launcher-ui 自动带 token。

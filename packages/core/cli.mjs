@@ -11,9 +11,11 @@
  * apply：写 active-theme → 控制面 /kick → watch 热更新
  *   （不再允许 --once heige 旁路，避免与 DreamSkin CSS 叠层）
  */
-import { realpathSync } from "node:fs";
+import { access, realpathSync } from "node:fs";
+import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 
 import {
   classifyInjection,
@@ -41,10 +43,62 @@ import {
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const bundledThemesRoot = join(repoRoot, "themes");
+const accessAsync = promisify(access);
 
 // All CLI options currently take a value (--theme ID, --image PATH, --port N).
 // If a future boolean flag is added, list its name here.
 const BOOLEAN_FLAGS = new Set();
+
+/**
+ * U3: fire-and-forget tray balloon via show-feedback.ps1.
+ * Respects ui-prefs applyBalloonEnabled inside the PS helper. Never blocks apply.
+ * @param {{ installRoot: string, themeName?: string, ok?: boolean }} opts
+ */
+async function queueApplyFeedbackBalloon({ installRoot, themeName = "皮肤", ok = true } = {}) {
+  if (process.platform !== "win32") return false;
+  const candidates = [
+    join(installRoot || "", "show-feedback.ps1"),
+    join(repoRoot, "apps", "launcher", "show-feedback.ps1"),
+  ];
+  let script = null;
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      await accessAsync(candidate);
+      script = candidate;
+      break;
+    } catch {
+      // try next
+    }
+  }
+  if (!script) return false;
+  try {
+    const child = spawn(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-STA",
+        "-WindowStyle",
+        "Hidden",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        script,
+        "-Code",
+        ok ? "apply-ok" : "apply-fail",
+        "-Detail",
+        String(themeName || "皮肤").slice(0, 80),
+        "-Ms",
+        "1600",
+      ],
+      { detached: true, stdio: "ignore", windowsHide: true },
+    );
+    child.unref();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function options(argv) {
   const result = {};
@@ -130,6 +184,8 @@ export async function runCli(argv, overrides = {}) {
         "默认 apply 不再启动第二套 injector，只更新 %LOCALAPPDATA%\\CodexDreamSkin\\active-theme。",
         "请先用任务栏 Codex 打开带 watch 的会话；改主题后数秒内应自动换肤。",
         "import-themes 会把仓内 themes/* 全部导入 DreamSkin themes 目录（含 preset，需先 unlock）。",
+        "U3：apply 成功后可弹轻反馈气泡；托盘「换肤气泡：开/关」或 ui-prefs.json applyBalloonEnabled 可关。",
+        "U4：首次 open 一次性提示任务栏入口（first-run-shown.flag）；不劫持商店 AUMID。",
       ],
     };
   }
@@ -188,6 +244,18 @@ export async function runCli(argv, overrides = {}) {
       stateRoot: deps.dreamStateRoot,
       installRoot: deps.installRoot,
     });
+    const note = formatKickResultNote(kick);
+    // U3: non-blocking balloon; prefs gate lives in show-feedback / launcher-ui.
+    let feedbackQueued = false;
+    try {
+      feedbackQueued = await queueApplyFeedbackBalloon({
+        installRoot: deps.installRoot,
+        themeName: written.name || written.id || themeId,
+        ok: Boolean(kick?.ok),
+      });
+    } catch {
+      feedbackQueued = false;
+    }
     return {
       mode: "hot-active-theme",
       themeId: written.id,
@@ -198,7 +266,8 @@ export async function runCli(argv, overrides = {}) {
       dreamSkin: dream.summary,
       injectorAlive: dream.injectorAlive,
       kick,
-      note: formatKickResultNote(kick),
+      note,
+      feedbackQueued,
     };
   }
 

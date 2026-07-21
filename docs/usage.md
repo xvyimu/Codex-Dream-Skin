@@ -87,7 +87,28 @@ node D:\orca\codex-skin\packages\core\cli.mjs apply --theme miku-488137
 node D:\orca\codex-skin\packages\core\cli.mjs doctor
 ```
 
-`apply` 只写 `active-theme`，由 watch injector 热更新，**不会**再起第二套注入器。
+`apply` 只写 `active-theme`，由 watch injector 热更新，**不会**再起第二套注入器。  
+成功后默认弹一次轻反馈气泡（U3）；失败时气泡会带简短 note。
+
+### 换肤成功气泡（可关 · U3）
+
+| 路径 | 说明 |
+|------|------|
+| 托盘右键 | **换肤气泡：开（点此关闭）** / **关（点此开启）** |
+| 配置文件 | `%LOCALAPPDATA%\CodexDreamSkin\ui-prefs.json` → `"applyBalloonEnabled": false` |
+
+关闭后：托盘菜单 ✓ / 换肤面板文案仍更新；**错误类**提示（裸启、CDP 关闭等）与**首次入口**提示不受此开关影响。
+
+### 首次入口提示（U4）
+
+第一次用任务栏 **Codex** 打开时，会一次性气泡说明：
+
+1. 日常用任务栏「Codex」  
+2. **不要用微软商店磁贴**（无皮肤是 OS 硬限 #21，不是故障）  
+3. 换肤入口与异常修复  
+
+标记文件：`%LOCALAPPDATA%\CodexDreamSkin\first-run-shown.flag`（存在即不再显示）。  
+**不会**劫持商店 AUMID。要再看一次：删掉该 flag 后重新 open。
 
 ### 重新导入内置主题
 
@@ -152,6 +173,8 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File "$env:LOCALAPPDATA\Pro
 | F6 提示只有 1 套 | catalog 空或锁定；`import-themes` / unlock |
 | 托盘菜单还是旧文案 | 退出托盘后重新点 Codex 拉起 |
 | CLI apply 没变化 | 先确认任务栏 Codex 已开且 `doctor` 显示 injectorAlive |
+| apply 无气泡 | 托盘「换肤气泡」已关，或看 `ui-prefs.json`；面板/托盘 ✓ 仍会变 |
+| 想再看首次入口提示 | 删 `%LOCALAPPDATA%\CodexDreamSkin\first-run-shown.flag` 后点任务栏 Codex |
 | 旧 heige / Codex Studio 入口 | **已废弃**；删残留快捷方式后只用本产品 Codex |
 
 ---

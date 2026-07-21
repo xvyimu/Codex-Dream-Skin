@@ -3,10 +3,10 @@
 
 | 字段 | 值 |
 |------|-----|
-| fullHead | dbc59821f1f308459a3e242293e99ac77d7b28b9 |
-| shortHead | dbc5982 |
-| expectedRuntimeId | 1.3.25-3f28aa |
+| fullHead | eff1170383b2dc523419ed9bf0ad8edfe7472464 |
+| shortHead | eff1170 |
+| expectedRuntimeId | 1.3.25-c44358 |
 | fresh | true |
 | themeCount | 11 |
-| generatedAt | 2026-07-20T20:12:16Z |
+| generatedAt | 2026-07-21T03:11:07Z |
 | generateCommand | `pwsh -NoProfile -File scripts/windows/write-baseline.ps1` |

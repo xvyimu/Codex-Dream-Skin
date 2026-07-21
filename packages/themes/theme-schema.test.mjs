@@ -7,7 +7,12 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadTheme, validateThemeManifest } from "./theme-schema.mjs";
+import {
+  loadTheme,
+  validateThemeManifest,
+  contrastRatio,
+  assertReadableTextSurface,
+} from "./theme-schema.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..");
@@ -134,6 +139,43 @@ function assert(cond, msg) {
     thumb: "thumb.webp",
   });
   assert(m.id === "nested-ok", "legal fields (thumb/copy) still accepted");
+}
+
+// --- B · text/surface contrast gate (readability) ---
+{
+  const blackWhite = contrastRatio("#FFFFFF", "#000000");
+  assert(blackWhite > 20, "contrastRatio white/black is high");
+  const ok = assertReadableTextSurface({
+    text: "#F0E6C8",
+    surface: "#171A2E",
+    accent: "#E0B458",
+    secondary: "#7A86D8",
+  });
+  assert(ok >= 4.5, "assertReadableTextSurface accepts genshin-like pair");
+  let threw = false;
+  let message = "";
+  try {
+    validateThemeManifest({
+      schemaVersion: 1,
+      id: "low-contrast",
+      name: "low contrast",
+      hero: "hero.webp",
+      colors: {
+        accent: "#888888",
+        secondary: "#777777",
+        surface: "#808080",
+        text: "#818181",
+      },
+    });
+  } catch (error) {
+    threw = true;
+    message = error?.message ?? String(error);
+  }
+  assert(threw, "rejects low text/surface contrast");
+  assert(
+    /contrast/i.test(message),
+    "low-contrast error mentions contrast",
+  );
 }
 
 // --- loadTheme on bundled heige theme ---

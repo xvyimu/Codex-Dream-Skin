@@ -364,6 +364,40 @@ try {
       Set-DreamSkinPaused -Paused $nextPaused -StateRoot $StateRoot | Out-Null
     }.GetNewClosure()
     $null = Add-DreamSkinTrayItem -Items $menu.Items -Text $pauseText -Action $pauseAction
+    # U3: toggle apply success balloon (ui-prefs.json · applyBalloonEnabled)
+    $balloonOn = $true
+    try {
+      if (Get-Command Test-CodexSkinApplyBalloonEnabled -ErrorAction SilentlyContinue) {
+        $balloonOn = [bool](Test-CodexSkinApplyBalloonEnabled -StateRoot $StateRoot)
+      }
+    } catch {}
+    $balloonLabel = if ($balloonOn) { '换肤气泡：开（点此关闭）' } else { '换肤气泡：关（点此开启）' }
+    $nextBalloon = -not $balloonOn
+    $null = Add-DreamSkinTrayItem -Items $menu.Items -Text $balloonLabel -Action {
+      try {
+        if (Get-Command Set-CodexSkinUiPrefs -ErrorAction SilentlyContinue) {
+          [void](Set-CodexSkinUiPrefs -StateRoot $StateRoot -ApplyBalloonEnabled $nextBalloon)
+        } else {
+          $prefsPath = Join-Path $StateRoot 'ui-prefs.json'
+          $obj = [ordered]@{
+            schemaVersion = 1
+            applyBalloonEnabled = [bool]$nextBalloon
+            updatedAt = (Get-Date).ToUniversalTime().ToString('o')
+          }
+          $json = ($obj | ConvertTo-Json -Depth 4) + "`n"
+          [System.IO.File]::WriteAllText($prefsPath, $json, [System.Text.UTF8Encoding]::new($false))
+        }
+        $tip = if ($nextBalloon) { '已开启换肤成功气泡' } else { '已关闭换肤成功气泡（菜单状态仍更新）' }
+        # Force one confirmation balloon even when turning off, so user sees the change took effect.
+        if (Get-Command Show-CodexSkinBalloon -ErrorAction SilentlyContinue) {
+          Show-CodexSkinBalloon -Message $tip -Title 'Codex Skin' -Ms 1800 -ThrottleKey 'prefs-balloon' -ThrottleSeconds 2 -Kind Info -Force
+        } else {
+          $notify.ShowBalloonTip(1800, 'Codex Skin', $tip, [System.Windows.Forms.ToolTipIcon]::Info)
+        }
+      } catch {
+        Show-DreamSkinTrayError -Message $_.Exception.Message
+      }
+    }.GetNewClosure()
     $null = Add-DreamSkinTrayItem -Items $menu.Items -Text '更换背景图（写入当前皮肤）' -Action {
       $dialog = [System.Windows.Forms.OpenFileDialog]::new()
       $dialog.Title = '选择 Codex 皮肤背景图'
@@ -426,7 +460,39 @@ try {
           $savedAction = {
             $null = Use-DreamSkinSavedTheme -ThemeDirectory $savedPath -StateRoot $StateRoot
             Set-DreamSkinPaused -Paused $false -StateRoot $StateRoot | Out-Null
-            $notify.ShowBalloonTip(1800, 'Codex Skin', "已切换：$savedName", [System.Windows.Forms.ToolTipIcon]::Info)
+            # Prefer control-plane kick so skin applies immediately (same as switch-theme-ui).
+            $kickOk = $false
+            $kickDetail = ''
+            try {
+              if (Get-Command Invoke-CodexSkinControl -ErrorAction SilentlyContinue) {
+                $cp = Invoke-CodexSkinControl -Action 'kick' -TimeoutMs 3500
+                if ($null -ne $cp -and $cp.ok) {
+                  $kickOk = $true
+                  $kickDetail = '即时生效'
+                } else {
+                  $kickDetail = '注入未确认'
+                }
+              }
+            } catch {
+              $kickDetail = $_.Exception.Message
+            }
+            # U3: respect ui-prefs; still update tray tip text even when balloon off.
+            try {
+              if (Get-Command Show-CodexSkinApplyFeedback -ErrorAction SilentlyContinue) {
+                [void](Show-CodexSkinApplyFeedback -ThemeName $savedName -Ok:$kickOk -Detail $kickDetail)
+              } elseif (
+                -not (Get-Command Test-CodexSkinApplyBalloonEnabled -ErrorAction SilentlyContinue) -or
+                (Test-CodexSkinApplyBalloonEnabled -StateRoot $StateRoot)
+              ) {
+                $tip = if ($kickOk) { "已切换：$savedName" } else { "已写入：$savedName · $kickDetail" }
+                $notify.ShowBalloonTip(1800, 'Codex Skin', $tip, [System.Windows.Forms.ToolTipIcon]::Info)
+              }
+            } catch {}
+            try {
+              if ($kickOk) {
+                $notify.Text = ("Codex Skin · {0}" -f $savedName)
+              }
+            } catch {}
           }.GetNewClosure()
           $item = Add-DreamSkinTrayItem -Items $savedMenu.DropDownItems -Text $label -Action $savedAction
           if ($isActive) { $item.Font = New-Object System.Drawing.Font($item.Font, [System.Drawing.FontStyle]::Bold) }

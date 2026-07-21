@@ -60,12 +60,28 @@ function Show-SwitchError([string]$Message) {
   } catch {}
 }
 
-function Show-StatusBalloon([string]$Message) {
+function Show-StatusBalloon([string]$Message, [bool]$Ok = $true) {
+  # U3: respect ui-prefs applyBalloonEnabled (shared with tray/CLI).
+  try {
+    if (Get-Command Test-CodexSkinApplyBalloonEnabled -ErrorAction SilentlyContinue) {
+      if (-not (Test-CodexSkinApplyBalloonEnabled)) { return }
+    }
+  } catch {}
   try {
     if ($null -ne $script:Tray -and $script:Tray.Visible) {
       $script:Tray.BalloonTipTitle = "Codex 换肤"
       $script:Tray.BalloonTipText = $Message
       $script:Tray.ShowBalloonTip(1200)
+      return
+    }
+  } catch {}
+  # No persistent tray icon: fall back to shared helper (still respects prefs).
+  try {
+    if (Get-Command Show-CodexSkinApplyFeedback -ErrorAction SilentlyContinue) {
+      # Message already formatted; extract theme name best-effort.
+      $name = $Message
+      if ($Message -match '^(?:已切换|已写入)[：:]\s*(.+?)(?:\s*[·\n]|$)') { $name = $Matches[1].Trim() }
+      [void](Show-CodexSkinApplyFeedback -ThemeName $name -Ok:$Ok -Detail '')
     }
   } catch {}
 }
@@ -338,10 +354,10 @@ try {
           $label.Text = "当前：$($entry.Name)`n$($kick.Message) · 可点「隐藏」收起"
           if ($kick.Ok) {
             $hint.Text = ("已切换：{0}（{1})" -f $entry.Name, $kick.Message)
-            Show-StatusBalloon ("已切换：" + $entry.Name)
+            Show-StatusBalloon ("已切换：" + $entry.Name) $true
           } else {
             $hint.Text = ("已写入：{0} · {1} [{2}]" -f $entry.Name, $kick.Message, $kick.Reason)
-            Show-StatusBalloon ("已写入：" + $entry.Name + " · " + $kick.Message)
+            Show-StatusBalloon ("已写入：" + $entry.Name + " · " + $kick.Message) $false
             if (Get-Command Show-CodexSkinUserFeedback -ErrorAction SilentlyContinue) {
               $map = switch ($kick.Reason) {
                 'cdp-closed' { 'cdp-closed' }

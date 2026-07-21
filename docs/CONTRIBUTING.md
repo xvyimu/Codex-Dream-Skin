@@ -49,10 +49,11 @@
 - [ ] 若含图片，导入侧 `MAX_SOURCE_IMAGE_BYTES`（theme-store，8MB）内
 - [ ] `node packages/core/cli.mjs list` 含新主题且 `schemaVersion=1`
 - [ ] `node packages/core/cli.mjs apply --theme <id>` 后 doctor `fresh=true`（可选但推荐）
-- [ ] **可读性（UX-3）**——目视或附截图：
+- [ ] **可读性（UX-3 / B 门禁）**——机器 + 目视：
+  - [ ] `npm run test:themes`：`text`/`surface` 对比度启发式 ≥ **4.5**（`assertReadableTextSurface`；非全站 WCAG 承诺）
   - [ ] `text` 与 `surface` / 页面底可辨，长文可读
   - [ ] `muted`/次要色不「融进」背景
-  - [ ] accent 上的字/图标有足够对比（参考 `--dream-accent-ink`）
+  - [ ] accent 上的字/图标有足够对比（参考 `--dream-accent-ink`；accent 本身不做硬失败）
   - [ ] 亮色主题与暗色意图自洽（若提供 dark）
   - [ ] hero/`art` 焦点不压住 composer 输入区（`focusX`/`focusY`）
   - [ ] **无**危险顶层键（`scripts`/`hooks`/…）；调色走 palette + [design-tokens.md](./design-tokens.md)

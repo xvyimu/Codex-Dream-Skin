@@ -41,7 +41,8 @@
 | [`research/2026-07-21-progress-aligned-debt-and-portfolio.md`](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) | 进度对齐：已关债 · 多方案组合 · 打磨卡片（长文） |
 | [`research/2026-07-21-integrated-master-research.md`](./research/2026-07-21-integrated-master-research.md) | 整合总册（中期） |
 | [`research/2026-07-21-master-research-v2-frozen.md`](./research/2026-07-21-master-research-v2-frozen.md) | 选代入口 v2（四包后） |
-| [`research/2026-07-21-master-research-v3-ux-visual.md`](./research/2026-07-21-master-research-v3-ux-visual.md) | **选代入口 v3**：工程冻结 + UX/视觉升级方案库 |
+| [`research/2026-07-21-master-research-v3-ux-visual.md`](./research/2026-07-21-master-research-v3-ux-visual.md) | 选代入口 v3：工程冻结 + UX/视觉升级方案库 |
+| [`research/2026-07-21-master-research-v4-u3u4-product.md`](./research/2026-07-21-master-research-v4-u3u4-product.md) | **选代入口 v4**：U3/U4 后进度 + 市场/架构/规范/路线图/API + 方案评分 |
 | [`adr/`](./adr/) | 架构决策（0001 合并 · 0002 上游 · 0003 版本源） |
 | 根目录 `CLAUDE.md` | Agent 短索引 |
 
