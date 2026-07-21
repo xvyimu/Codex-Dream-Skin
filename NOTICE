@@ -1,5 +1,19 @@
-Codex Skin (codex-skin) product-line code is MIT-licensed; see LICENSE.
+Codexveil / codex-skin product-line code is MIT-licensed; see LICENSE.
+Copyright (c) 2026 xvyimu.
 
-vendor/dreamskin/ is a read-only mirror of upstream Fei-Away/Codex-Dream-Skin
-for promote/sync only. It is not re-licensed by this repository. Do not treat
-vendor/ as first-party MIT grant beyond upstream terms.
+Third-party snapshot
+--------------------
+`vendor/dreamskin/` contains a **frozen, offline** copy of historical DreamSkin-era
+visual assets and helper scripts retained for local reference and optional manual
+diff only. It is **not** an active upstream mirror, is **not** fetched by CI or
+`origin`, and is **not** imported by install-plane runtime paths.
+
+That snapshot retains the license and copyright of its original authors as
+shipped inside those files. It is **not** re-licensed as first-party Codexveil
+code. Do not treat `vendor/` as granting rights beyond what those files already
+state.
+
+Development rule: never `import` / ship `vendor/` into `versions/<id>/` or
+install payloads. Optional promote of a single asset into `packages/runtime/`
+is a **manual, one-off** engineering decision with a documented diff — not a
+scheduled sync job.
