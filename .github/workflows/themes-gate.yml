@@ -23,7 +23,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # pnpm 11.5+ needs Node >= 22.13 (node:sqlite); product engines remain >=20 for runtime
+          node-version: "22"
           cache: pnpm
 
       - name: Install (dev plane)
