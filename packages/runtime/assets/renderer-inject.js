@@ -40,6 +40,8 @@
     "--dream-image-luma",
     "--dream-brand",
     "--dream-headline",
+    "--dream-secondary",
+    "--dream-text",
   ];
   const HOME_UTILITY_CLASS = "dream-home-utility";
   const installToken = {};
@@ -68,15 +70,22 @@
   const normalizeConfig = (value) => {
     const config = value && typeof value === "object" ? value : {};
     const art = config.art && typeof config.art === "object" ? config.art : {};
+    const palette = config.palette && typeof config.palette === "object" ? config.palette : {};
     const hasNumber = (candidate) =>
       (typeof candidate === "number" || (typeof candidate === "string" && candidate.trim() !== "")) &&
       Number.isFinite(Number(candidate));
-    const requestedAccent = typeof config?.palette?.accent === "string"
-      ? config.palette.accent.trim()
-      : "";
-    const safeAccent = /^(?:#[\da-f]{3,8}|(?:rgb|hsl|oklch|oklab)\([^;{}]{1,96}\))$/i.test(requestedAccent)
-      ? requestedAccent
-      : null;
+    const safeCssColor = (raw) => {
+      if (typeof raw !== "string") return null;
+      const value = raw.trim();
+      if (!value) return null;
+      return /^(?:#[\da-f]{3,8}|(?:rgb|hsl|oklch|oklab)\([^;{}]{1,96}\))$/i.test(value)
+        ? value
+        : null;
+    };
+    const requestedAccent = safeCssColor(palette.accent);
+    const requestedSurface = safeCssColor(palette.surface);
+    const requestedText = safeCssColor(palette.text);
+    const requestedSecondary = safeCssColor(palette.secondary);
     const appearance = ["auto", "light", "dark"].includes(config.appearance)
       ? config.appearance
       : "auto";
@@ -90,13 +99,27 @@
     // Brand overlay strings (heige-style ::before/::after). Single-line, capped.
     const oneLine = (v, max) =>
       (typeof v === "string" ? v.replace(/[-]/g, "").trim().slice(0, max) : "");
+    // Infer theme family from palette.surface so night heige packs stay dark even
+    // when Codex shell/OS reports light (opening a project used to flash white).
+    let surfaceLuma = null;
+    if (requestedSurface && /^#[\da-f]{6}$/i.test(requestedSurface)) {
+      const n = Number.parseInt(requestedSurface.slice(1), 16);
+      const r = (n >> 16) / 255;
+      const g = ((n >> 8) & 255) / 255;
+      const b = (n & 255) / 255;
+      surfaceLuma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
     return {
       appearance,
       safeArea,
       taskMode,
       focusX: hasNumber(art.focusX) ? clamp(art.focusX) : null,
       focusY: hasNumber(art.focusY) ? clamp(art.focusY) : null,
-      accent: safeAccent,
+      accent: requestedAccent,
+      surface: requestedSurface,
+      text: requestedText,
+      secondary: requestedSecondary,
+      surfaceLuma,
       brandSubtitle: oneLine(config.brandSubtitle, 80),
       tagline: oneLine(config.tagline, 160),
       initialAspect: Number.isFinite(metadataRatio) && metadataRatio > 0 ? metadataRatio : null,
@@ -299,7 +322,24 @@
     try {
       return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     } catch {}
-    return "light";
+    // Prefer dark residual chrome (upstream DreamSkin coding default) over a
+    // white flash when shell signals are missing during route transitions.
+    return "dark";
+  };
+
+  /**
+   * Resolve light/dark skin class. Palette surface wins over flaky shell auto
+   * detection so opening projects / tasks does not snap to near-white tokens.
+   */
+  const resolveAppearance = () => {
+    if (config.appearance === "light" || config.appearance === "dark") {
+      return config.appearance;
+    }
+    if (typeof config.surfaceLuma === "number") {
+      if (config.surfaceLuma <= 0.45) return "dark";
+      if (config.surfaceLuma >= 0.62) return "light";
+    }
+    return detectShellAppearance();
   };
 
   const clearSkinDom = () => {
@@ -317,7 +357,7 @@
   const applyProfile = (root) => {
     const focusX = config.focusX ?? profile.focusX;
     const focusY = config.focusY ?? profile.focusY;
-    const appearance = config.appearance === "auto" ? detectShellAppearance() : config.appearance;
+    const appearance = resolveAppearance();
     const focus = focusX < .4 ? "left" : focusX > .6 ? "right" : "center";
     const safeArea = config.safeArea === "auto" ? (profile.safeArea ||
       (focus === "left" ? "right" : focus === "right" ? "left" : "center")) : config.safeArea;
@@ -352,6 +392,18 @@
     root.style.setProperty("--dream-accent", accent);
     root.style.setProperty("--dream-accent-ink", accentInk);
     root.style.setProperty("--dream-image-luma", profile.luma.toFixed(3));
+    // Heige palette drives secondary; canvas/surface stay on dark/light token
+    // families (upstream DreamSkin) so color-mix chains keep working.
+    if (config.secondary) {
+      root.style.setProperty("--dream-secondary", config.secondary);
+    } else {
+      root.style.removeProperty("--dream-secondary");
+    }
+    if (config.text) {
+      root.style.setProperty("--dream-text", config.text);
+    } else {
+      root.style.removeProperty("--dream-text");
+    }
     // Brand overlay: JSON.stringify yields a properly quoted+escaped CSS string
     // token consumed by `content: var(--dream-brand)`. Empty -> content hidden.
     if (config.brandSubtitle) {
@@ -384,7 +436,9 @@
       document.querySelector("main") ||
       document.querySelector('[role="main"]');
     if (!shellMain) {
-      clearSkinDom();
+      // Project/task route changes can briefly detach main. Clearing here paints
+      // native light chrome (white flash). Keep last skin frame until shell returns
+      // or cleanup()/disabled is explicit.
       return;
     }
 
