@@ -14,7 +14,8 @@
 
 ## 同类对照与债务
 
-- [peer-landscape-and-architecture](./research/2026-07-21-peer-landscape-and-architecture.md) — 上游/Styler/awesome 对照
+- [**github-peer-matrix（2026-07-21）**](./research/2026-07-21-github-peer-matrix.md) — GitHub 细矩阵：引擎/编辑器/标准/镜像反例 · 可借鉴/不要抄 · 复现命令
+- [peer-landscape-and-architecture](./research/2026-07-21-peer-landscape-and-architecture.md) — 上游/Styler/awesome 架构长文
 - [progress-aligned-debt-and-portfolio](./research/2026-07-21-progress-aligned-debt-and-portfolio.md) — 进度对齐债务 F1-F6
 
 ## 核心文档
