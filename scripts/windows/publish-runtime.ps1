@@ -35,6 +35,7 @@ $runtime = Join-Path $RepoRoot "packages\runtime"
 $requiredRuntimeScripts = @(
   "injector.mjs",
   "theme-load.mjs",          # static import from injector (S2 extract)
+  "payload-builder.mjs",     # static import from injector (S3 extract)
   "cdp-url-guard.mjs",
   "theme-catalog-budget.mjs", # import from theme-load
   "image-metadata.mjs",       # import from theme-load
@@ -48,8 +49,8 @@ foreach ($name in $requiredRuntimeScripts) {
   }
   Copy-Item $srcReq (Join-Path $dest ("scripts\" + $name)) -Force
 }
-# Optional / forward: payload-builder when extracted (S3); other helpers.
-foreach ($extra in @("payload-builder.mjs", "wait-shell.mjs", "thumb.mjs", "probe-session-dom.mjs")) {
+# Optional helpers (payload-builder is required above after S3).
+foreach ($extra in @("wait-shell.mjs", "thumb.mjs", "probe-session-dom.mjs")) {
   $srcExtra = Join-Path $runtime ("scripts\" + $extra)
   if (-not (Test-Path -LiteralPath $srcExtra) -and $extra -eq 'probe-session-dom.mjs') {
     $srcExtra = Join-Path $RepoRoot "scripts\windows\probe-session-dom.mjs"

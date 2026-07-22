@@ -57,8 +57,9 @@
   - [ ] 亮色主题与暗色意图自洽（若提供 dark）
   - [ ] hero/`art` 焦点不压住 composer 输入区（`focusX`/`focusY`）
   - [ ] **无**危险顶层键（`scripts`/`hooks`/…）；调色走 palette + [design-tokens.md](./design-tokens.md)
+  - [ ] **真机预览纪律（W2 质量门）**：合入前至少一次装态/本机 `apply --theme <id>` 或 doctor 后肉眼看 H1 粉/色系 · H2 侧栏层次 · H3 composer 对比 · H4 hero 不压输入 · H5 F6 切主题 · H6 kick · H7 暗色意图；PR 勾选或附截图。机器门：`npm run test:themes` + `npm run test:catalog-quality`（bundled surface/art 存在 + catalog 预算常量）
 
-**正例**：`themes/dream-aurora/theme.json` + `test:themes` 绿 + list 命中 + 可读性勾选。
+**正例**：`themes/dream-aurora/theme.json` + `test:themes` 绿 + list 命中 + 可读性勾选 + 真机 H1–H7 一句。
 
 **反例**：主题目录塞进 `packages/runtime/assets/`；test 未覆盖新 id；灰字灰底「有氛围但不可读」。
 

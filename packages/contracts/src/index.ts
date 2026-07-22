@@ -26,3 +26,19 @@ export {
   parseControlError,
   type ControlError,
 } from "./control.js";
+export {
+  bubbleStyleSchema,
+  themeInjectConfigSchema,
+  themeCatalogEntrySchema,
+  kickResultSchema,
+  EARLY_GENERATION_KEY,
+  EARLY_APPLIED_KEY,
+  parseKickResult,
+  safeParseKickResult,
+  parseThemeInjectConfig,
+  parseThemeCatalogEntry,
+  type BubbleStyle,
+  type ThemeInjectConfig,
+  type ThemeCatalogEntry,
+  type KickResult,
+} from "./inject.js";

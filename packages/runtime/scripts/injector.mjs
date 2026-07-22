@@ -3,25 +3,23 @@
 // 2. parseArgs (--theme-dir, --state-root, modes)      Region: ParseArgs
 // 3. CDP session / identity / targets                  Region: CdpSession
 // 4. Theme load / catalog                              → theme-load.mjs
-// 5. Payload budget / loadPayload                      Region: ThemeLoad (payload; S3 → payload-builder)
+// 5. Payload budget / loadPayload                      → payload-builder.mjs (S3)
 // 6. Apply / verify / one-shot                         Region: Apply
 // 7. Watch main loop + signals                         Region: Watch
 // 8. Control-plane startup                             Region: ControlPlane
 // 9. CLI entry (self-test / check-payload / watch)     Region: Main
-// Theme load extracted to theme-load.mjs (injector-split S2); publish must copy both.
+// Theme load → theme-load.mjs (S2); payload → payload-builder.mjs (S3); publish must copy both.
 
 import fs from "node:fs/promises";
-import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BROWSER_ID_PATTERN, isValidBrowserId, validatedDebuggerUrl } from "./cdp-url-guard.mjs";
 import {
   loadTheme,
-  loadThemeCatalog,
-  imageDataUrl,
   readCatalogSourceStamp,
   readThemeSourceStamp,
 } from "./theme-load.mjs";
+import { loadPayload as buildPayload, earlyPayloadFor } from "./payload-builder.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const here = path.dirname(scriptPath);
@@ -299,62 +297,11 @@ async function connectBrowserIdentityAnchor(port, expectedBrowserId) {
   return new BrowserIdentityAnchor(validatedDebuggerUrl(version, port)).open();
 }
 
-// === Region: ThemeLoad (payload; catalog/load in theme-load.mjs) ===
+// === Region: ThemeLoad (payload → payload-builder.mjs; catalog/load in theme-load.mjs) ===
 
+/** Thin wrapper: inject runtime root so payload-builder stays free of injector `root`. */
 async function loadPayload(themeDir = path.join(root, "assets"), candidateTheme = null) {
-  const loadedTheme = candidateTheme ?? await loadTheme(themeDir);
-  const [css, template, themeCatalog] = await Promise.all([
-    fs.readFile(path.join(root, "assets", "dream-skin.css"), "utf8"),
-    fs.readFile(path.join(root, "assets", "renderer-inject.js"), "utf8"),
-    loadThemeCatalog(themeDir, loadedTheme),
-  ]);
-  // Active art rides __DREAM_ART_JSON__ as a data URL so the renderer paints the
-  // right-half hero (heige-style). __DREAM_THEME_JSON__ carries the active theme
-  // config (art focus + palette + brand copy) that drives the ::before/::after
-  // brand overlay. Catalog stays the F6 channel (best-effort; may be dropped by
-  // older renderers that only read 3 args).
-  // bubbleStyle from ui-prefs.json (borderless|card) — conversation chrome.
-  let bubbleStyle = "borderless";
-  try {
-    const stateRoot = path.dirname(path.resolve(themeDir));
-    const prefsPath = path.join(stateRoot, "ui-prefs.json");
-    const prefsRaw = await fs.readFile(prefsPath, "utf8");
-    const prefs = JSON.parse(prefsRaw.replace(/^﻿/, ""));
-    if (prefs && typeof prefs.bubbleStyle === "string") {
-      const bs = prefs.bubbleStyle.trim().toLowerCase();
-      if (bs === "card" || bs === "borderless") bubbleStyle = bs;
-    }
-  } catch {
-    // missing prefs → borderless default
-  }
-  const themeForInject = { ...loadedTheme.theme, bubbleStyle };
-  const activeArtDataUrl = imageDataUrl(loadedTheme);
-  const payload = template
-    .replace("__DREAM_CSS_JSON__", JSON.stringify(css))
-    .replace("__DREAM_ART_JSON__", JSON.stringify(activeArtDataUrl))
-    .replace("__DREAM_THEME_JSON__", JSON.stringify(themeForInject))
-    .replace("__DREAM_THEME_CATALOG_JSON__", JSON.stringify(themeCatalog.entries));
-  const fingerprint = createHash("sha256")
-    .update(loadedTheme.fingerprint)
-    .update("\0")
-    .update(themeCatalog.fingerprint)
-    .update("\0")
-    .update(bubbleStyle)
-    .digest("hex");
-  const { imageBytes: _imageBytes, ...themeState } = loadedTheme;
-  return {
-    ...themeState,
-    activeThemeFingerprint: loadedTheme.fingerprint,
-    catalogSourceStamp: themeCatalog.catalogSourceStamp,
-    fingerprint,
-    imageBytes: loadedTheme.imageBytes.length,
-    catalogImageBytes: themeCatalog.catalogImageBytes,
-    themeCount: themeCatalog.entries.length,
-    catalogSkippedLarge: themeCatalog.skippedLarge ?? 0,
-    catalogSkippedBudget: themeCatalog.skippedBudget ?? 0,
-    catalogThumbCount: themeCatalog.thumbCount ?? 0,
-    payload,
-  };
+  return buildPayload(root, themeDir, candidateTheme);
 }
 
 async function fileExists(filePath) {
@@ -447,46 +394,8 @@ async function applyToSession(session, payload) {
   return session.evaluate(payload);
 }
 
-export function earlyPayloadFor(payload, revision) {
-  return `(() => {
-    const generationKey = "__CODEX_DREAM_SKIN_EARLY_GENERATION__";
-    const appliedKey = "__CODEX_DREAM_SKIN_EARLY_APPLIED__";
-    const generation = ${JSON.stringify(revision)};
-    window[generationKey] = generation;
-    let observer = null;
-    let timeout = null;
-    const stop = () => {
-      observer?.disconnect();
-      observer = null;
-      if (timeout) clearTimeout(timeout);
-      timeout = null;
-    };
-    const install = () => {
-      if (window[generationKey] !== generation) { stop(); return true; }
-      const root = document.documentElement;
-      if (!root || !document.body) return false;
-      // Adaptive readiness for Codex DOM renames after Store updates.
-      const shell = document.querySelector('main.main-surface, main[class*="main-surface"], main[class*="MainSurface"], main');
-      const sidebar = document.querySelector('aside.app-shell-left-panel, aside[class*="left-panel"], aside[class*="sidebar"], nav[class*="sidebar"]');
-      const composer = document.querySelector('.composer-surface-chrome, [class*="composer-surface"], [class*="ComposerSurface"]');
-      const mainRole = document.querySelector('[role="main"]');
-      const ready =
-        (shell && sidebar) ||
-        (document.getElementById('root') && (shell || composer || mainRole));
-      if (!ready) return false;
-      stop();
-      ${payload};
-      window[appliedKey] = generation;
-      return true;
-    };
-    if (install()) return;
-    if (typeof MutationObserver === "function" && document.documentElement) {
-      observer = new MutationObserver(install);
-      observer.observe(document.documentElement, { childList: true, subtree: true });
-    }
-    timeout = setTimeout(stop, 10000);
-  })()`;
-}
+// earlyPayloadFor re-exported from payload-builder.mjs (injector-split S3)
+export { earlyPayloadFor };
 
 async function registerEarlyPayload(session, payload, revision) {
   const result = await session.send("Page.addScriptToEvaluateOnNewDocument", {

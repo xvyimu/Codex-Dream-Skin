@@ -95,12 +95,12 @@ packages/runtime/scripts/
 
 ## 7. DoD
 
-- [ ] `npm test` exit 0（含新测）  
-- [ ] `injector.mjs` 行数下降（目标量级 ≤~1100，以实测为准）  
-- [ ] publish 白名单含 `theme-load.mjs` + `payload-builder.mjs`  
-- [ ] fingerprint / loadTheme 有离线测  
-- [ ] 无 core ↔ runtime 新边  
-- [ ] 每步独立 commit；总结：变更清单 / 验证 / 残留风险  
+- [x] `npm test` exit 0（含新测） — W2 验证见 `docs/ops/w2-arch-upgrade-codexveil-claude.md`  
+- [x] `injector.mjs` 行数下降（S2+S3；payload 迁出）  
+- [x] publish 白名单含 `theme-load.mjs` + `payload-builder.mjs`（S3：payload-builder **required**）  
+- [x] fingerprint / loadTheme 有离线测（`theme-load.test` + `payload-builder.test`）  
+- [x] 无 core ↔ runtime 新边  
+- [ ] 每步独立 commit；总结：变更清单 / 验证 / 残留风险 — 由合入人 gate  
 
 ## 8. Backlog（另 PR，勿塞进本切片）
 
@@ -122,3 +122,4 @@ packages/runtime/scripts/
 | 日期 | 说明 |
 |------|------|
 | 2026-07-22 | 初版：模块一验收后落盘 SSOT |
+| 2026-07-23 | W2：S3 `payload-builder.mjs` 抽出 + 离线测 + publish required 白名单 |

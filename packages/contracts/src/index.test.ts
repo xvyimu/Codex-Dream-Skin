@@ -7,6 +7,12 @@ import {
   parseDoctorSlice,
   parseControlError,
   isCssColor,
+  parseKickResult,
+  safeParseKickResult,
+  parseThemeInjectConfig,
+  parseThemeCatalogEntry,
+  EARLY_GENERATION_KEY,
+  EARLY_APPLIED_KEY,
 } from "./index.js";
 
 describe("isCssColor", () => {
@@ -75,5 +81,61 @@ describe("control error", () => {
       detail: "provide header x-codex-skin-token",
     });
     assert.equal(e.reason, "token-required");
+  });
+});
+
+describe("inject / kick surface (W2)", () => {
+  it("parses watch-kick success body", () => {
+    const k = parseKickResult({
+      ok: true,
+      mode: "watch-kick",
+      applied: 1,
+      sessions: 1,
+      fingerprint: "a".repeat(64),
+      ms: 12,
+      note: "applied",
+      extra: true,
+    });
+    assert.equal(k.ok, true);
+    assert.equal(k.applied, 1);
+    assert.equal(k.fingerprint?.length, 64);
+  });
+
+  it("parses paused kick failure", () => {
+    const k = parseKickResult({ ok: false, reason: "paused", ms: 1 });
+    assert.equal(k.ok, false);
+    assert.equal(k.reason, "paused");
+  });
+
+  it("rejects non-boolean ok", () => {
+    const r = safeParseKickResult({ ok: "yes" });
+    assert.equal(r.success, false);
+  });
+
+  it("parses theme inject config with bubbleStyle", () => {
+    const t = parseThemeInjectConfig({
+      id: "preset-arina-hashimoto",
+      name: "桥本有菜",
+      palette: { accent: "#E8A0BF", surface: "#1A1218" },
+      bubbleStyle: "card",
+      art: { focusX: 0.72, focusY: 0.45, safeArea: "left" },
+    });
+    assert.equal(t.bubbleStyle, "card");
+    assert.equal(t.palette?.surface, "#1A1218");
+  });
+
+  it("parses catalog entry with data URL art", () => {
+    const e = parseThemeCatalogEntry({
+      key: "active",
+      name: "A",
+      config: { id: "a", palette: { accent: "#fff" } },
+      artDataUrl: "data:image/png;base64,xx",
+    });
+    assert.equal(e.key, "active");
+  });
+
+  it("exports early-apply marker keys", () => {
+    assert.equal(EARLY_GENERATION_KEY, "__CODEX_DREAM_SKIN_EARLY_GENERATION__");
+    assert.equal(EARLY_APPLIED_KEY, "__CODEX_DREAM_SKIN_EARLY_APPLIED__");
   });
 });

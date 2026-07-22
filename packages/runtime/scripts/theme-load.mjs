@@ -129,7 +129,7 @@ export async function loadTheme(themeDir) {
   };
 }
 
-/** Shared by catalog entries and loadPayload (payload-builder will import later). */
+/** Shared by catalog entries and loadPayload (payload-builder S3). */
 export function imageDataUrl(loadedTheme) {
   const extension = path.extname(loadedTheme.imagePath).toLowerCase();
   const mime = extension === ".jpg" || extension === ".jpeg" ? "image/jpeg"

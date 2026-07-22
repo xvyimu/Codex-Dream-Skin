@@ -53,6 +53,7 @@ try {
   $requiredNames = @(
     "injector.mjs",
     "theme-load.mjs",
+    "payload-builder.mjs",
     "cdp-url-guard.mjs",
     "theme-catalog-budget.mjs",
     "image-metadata.mjs",
@@ -85,8 +86,8 @@ try {
       Copy-Item $src (Join-Path $stageScripts $name) -Force
     }
   }
-  # Optional helpers if present (mirrors publish optional loop; fs-io/control-plane are required).
-  foreach ($extra in @("payload-builder.mjs", "wait-shell.mjs", "thumb.mjs")) {
+  # Optional helpers if present (mirrors publish optional loop).
+  foreach ($extra in @("wait-shell.mjs", "thumb.mjs")) {
     $src = Join-Path $runtimeScripts $extra
     if (Test-Path -LiteralPath $src) {
       Copy-Item $src (Join-Path $stageScripts $extra) -Force
@@ -151,6 +152,8 @@ console.log(JSON.stringify({ pass: true, export: "loadTheme" }));
     $injText = [System.IO.File]::ReadAllText($injRepo)
     $importsThemeLoad = $injText -match 'from\s+["'']\./theme-load\.mjs["'']'
     Add-Check "injector:imports-theme-load" $importsThemeLoad "injector.mjs must import ./theme-load.mjs"
+    $importsPayloadBuilder = $injText -match 'from\s+["'']\./payload-builder\.mjs["'']'
+    Add-Check "injector:imports-payload-builder" $importsPayloadBuilder "injector.mjs must import ./payload-builder.mjs"
     # Dynamic: await import("./control-plane.mjs") — watch path; optional whitelist was the hole.
     $importsControlPlane = $injText -match 'import\s*\(\s*["'']\./control-plane\.mjs["'']\s*\)'
     Add-Check "injector:imports-control-plane" $importsControlPlane "injector.mjs must dynamic-import ./control-plane.mjs"
@@ -211,7 +214,7 @@ if ($Json) {
 } elseif (-not $report.ok) {
   Write-Host ("VERIFY FAIL exit={0} failed=[{1}]" -f $report.exitCode, ($report.failed -join ", "))
 } else {
-  Write-Host "VERIFY OK publish runtime payload closed (theme-load + control-plane + required ESM graph)"
+  Write-Host "VERIFY OK publish runtime payload closed (theme-load + payload-builder + control-plane + required ESM graph)"
 }
 
 exit $report.exitCode
