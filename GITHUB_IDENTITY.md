@@ -4,10 +4,10 @@
 |--|--|
 | **Repository** | https://github.com/xvyimu/Codexveil |
 | **Product install name** | CodexDreamSkin（`%LOCALAPPDATA%\Programs\CodexDreamSkin`） |
-| **Dev tree / npm** | `D:\orca\codex-skin` · junction `D:\orca\Codexveil` · package `"name": "codex-skin"` |
+| **Dev tree / npm** | `D:\orca\Codexveil`（入口 `D:\projects\Codexveil`）· package `"name": "codex-skin"` |
 | **Default branch** | `main` |
 | **Remotes** | **仅** `origin` → 本仓。**无** `upstream` / 无 fork parent |
-| **License** | MIT · Copyright (c) 2026 xvyimu |
+| **License** | MIT · Copyright (c) 2026 xvyimu · [NOTICE](./NOTICE) |
 
 ## 身份规则
 
@@ -15,3 +15,4 @@
 - 产品 UI / 安装路径 / 开始菜单显示名仍为 **CodexDreamSkin**（不随仓库名改）。
 - 本仓视为**独立产品线**（ADR 0006）：不跟踪、不 merge、不 PR 回任何第三方皮肤仓库。
 - 树内**无** `vendor/` 第三方快照、**无** `docs/research/` 考古长文（已从工作树删除；仅 git 历史可查）。
+- 合规：保留 MIT `LICENSE` + `NOTICE`；不宣称「无任何第三方关联的闭源原创洗白」。

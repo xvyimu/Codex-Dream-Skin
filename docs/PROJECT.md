@@ -1,8 +1,8 @@
-# codex-skin 项目文档
+# Codexveil 项目文档
 
 > **产品**：统一 Codex Desktop 换肤产品线（DreamSkin 守护 + heige 多主题）  
 > **GitHub 仓库**：https://github.com/xvyimu/Codexveil（**独立产品线** · ADR 0006 · 仅 `origin`）  
-> **开发仓**：`D:\orca\codex-skin`（入口 junction：`D:\orca\Codexveil`）  
+> **开发仓**：`D:\orca\Codexveil`（统一入口：`D:\projects\Codexveil`）  
 > **安装态 / 产品显示名**：`%LOCALAPPDATA%\Programs\CodexDreamSkin`（与 GitHub 仓名分离）  
 > **当前主线**：runtime `1.3.25` · HEAD 以 `git rev-parse HEAD` 为准（全面检查见 [`AUDIT-2026-07-20.md`](./AUDIT-2026-07-20.md)）  
 > **文档原则**：先约束，后生成｜先架构，后界面｜先验证，后合并  
@@ -326,7 +326,7 @@ cli apply --theme <id>
 ### 5.3 发布
 
 ```text
-publish-runtime.ps1 -RepoRoot D:\orca\codex-skin [-Version x.y.z]
+publish-runtime.ps1 -RepoRoot D:\orca\Codexveil [-Version x.y.z]
   → 拷 packages/runtime → versions/<id>/
   → stamp SKIN_VERSION_TOKEN（源 + 副本）
   → 同步 core-win → lib\ + versions scripts
@@ -376,7 +376,7 @@ publish-runtime.ps1 -RepoRoot D:\orca\codex-skin [-Version x.y.z]
 ## 7. 开发命令
 
 ```powershell
-cd D:\orca\codex-skin
+cd D:\orca\Codexveil
 
 # 诊断
 node packages/core/cli.mjs doctor
@@ -391,7 +391,7 @@ node packages/core/cli.mjs apply --theme genshin-night
 node packages/core/cli.mjs import-themes
 
 # 发布
-powershell -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\codex-skin
+powershell -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\Codexveil
 ```
 
 **Shell 约定**：Windows 脚本优先 **pwsh / PowerShell 7**；安装态兼容 5.1 的 launcher 保持可运行。

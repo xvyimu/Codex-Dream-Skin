@@ -1,7 +1,7 @@
 # Codexveil
 
 **GitHub：** [xvyimu/Codexveil](https://github.com/xvyimu/Codexveil)  
-**产品线（安装态）：** CodexDreamSkin · **开发仓目录：** `codex-skin/`  
+**产品线（安装态）：** CodexDreamSkin · **开发仓：** `D:\orca\Codexveil`  
 **平台：** Windows 10/11 · OpenAI Codex Desktop（Store）  
 **许可：** [MIT](./LICENSE) · Copyright (c) 2026 xvyimu  
 
@@ -44,7 +44,7 @@ docs/                  PROJECT · ARCHITECTURE · ADR · 报告
 ## 快速开始（开发）
 
 ```powershell
-cd D:\orca\codex-skin
+cd D:\orca\Codexveil
 node packages/core/cli.mjs help
 node packages/core/cli.mjs doctor
 npm test
@@ -64,7 +64,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\Install.ps1
 发布到本机开发安装态：
 
 ```powershell
-pwsh -NoProfile -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\codex-skin -Version 1.3.25
+pwsh -NoProfile -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\Codexveil -Version 1.3.25
 ```
 
 ## 硬边界
@@ -72,6 +72,13 @@ pwsh -NoProfile -File scripts\windows\publish-runtime.ps1 -RepoRoot D:\orca\code
 - 单 watch injector；`packages/core` ↔ `packages/runtime` **禁止**互引  
 - 安装态 runtime **零第三方 npm**；主题写入只经 `packages/themes`  
 - 不改 Codex `.asar` / 不做 macOS 主路径 / 不镜像整棵安装树  
+
+## 关于本项目 / 许可
+
+- **独立产品线**（ADR 0006）：本仓代码与发行以 **Codexveil / CodexDreamSkin** 身份维护；MIT · [LICENSE](./LICENSE) · 说明见 [NOTICE](./NOTICE)。  
+- **不**作为任何第三方皮肤仓的 fork 同步副本；本地仅 `origin` → 本仓。  
+- 宿主应用为 OpenAI Codex Desktop（第三方）；本项目不主张其商标或程序本体的权利。  
+- 身份卡：[GITHUB_IDENTITY.md](./GITHUB_IDENTITY.md)
 
 ## 链接
 

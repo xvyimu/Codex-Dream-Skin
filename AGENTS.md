@@ -1,7 +1,7 @@
-# codex-skin
+# Codexveil
 
 Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题。Node ≥20，ESM。  
-仓：`D:\orca\codex-skin` · 安装态：`%LOCALAPPDATA%\Programs\CodexDreamSkin`  
+仓：`D:\orca\Codexveil` · 安装态：`%LOCALAPPDATA%\Programs\CodexDreamSkin`  
 （与 `CLAUDE.md` **同大纲**；改一处请同步另一处意图。）
 
 ## 先读

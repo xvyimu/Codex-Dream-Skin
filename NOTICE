@@ -1,7 +1,28 @@
-Codexveil / codex-skin product-line code is MIT-licensed; see LICENSE.
-Copyright (c) 2026 xvyimu.
+Codexveil Notices
+=================
 
-As of 2026-07-22 this tree no longer vendors third-party skin snapshots.
-First-party sources live under `apps/`, `packages/`, `themes/`, and `scripts/`.
-Historical DreamSkin-era material (if needed for archaeology) is only in git
-history prior to the drop-vendor commit — not as a live `vendor/` tree.
+Product / repository
+--------------------
+  Name:       Codexveil (GitHub: https://github.com/xvyimu/Codexveil)
+  Install UI: CodexDreamSkin
+  Copyright (c) 2026 xvyimu
+  License:    MIT — see LICENSE
+
+Independence
+------------
+  This tree is maintained as an **independent product line** (ADR 0006):
+  only `origin` → this repo; no `upstream` remote; no GitHub fork parent;
+  no live `vendor/` third-party skin snapshots.
+
+  First-party sources live under `apps/`, `packages/`, `themes/`, and `scripts/`.
+  Historical material (if any) may exist only in older git history, not as a
+  live dependency tree.
+
+Third-party / host app
+----------------------
+  Codexveil injects themes into **OpenAI Codex Desktop** via CDP on Windows.
+  Codex Desktop itself is third-party software; this project does not claim
+  ownership of Codex trademarks or the host application.
+
+  Dependency licenses of npm packages used at build/dev time are governed by
+  their respective packages (see package-lock / npm license reports).
