@@ -2,13 +2,15 @@
 # Does NOT touch %LOCALAPPDATA%\Programs\CodexDreamSkin or current.json.
 #
 # Exit codes:
-#   0 = publish whitelist closed for injector ESM graph (theme-load included)
+#   0 = publish whitelist closed for injector ESM graph
+#       (theme-load + control-plane + fs-io included)
 #   1 = missing required script / static whitelist hole / import failed
 #   3 = unexpected error
 #
 # Usage:
 #   pwsh -NoProfile -File scripts/windows/verify-publish-runtime-payload.ps1
 #   pwsh -NoProfile -File scripts/windows/verify-publish-runtime-payload.ps1 -Json
+# Cross-link: docs/ops/true-publish-gate-checklist.md · npm run doctor (live only)
 param(
   [string]$RepoRoot = (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent),
   [switch]$Json
@@ -53,7 +55,9 @@ try {
     "theme-load.mjs",
     "cdp-url-guard.mjs",
     "theme-catalog-budget.mjs",
-    "image-metadata.mjs"
+    "image-metadata.mjs",
+    "control-plane.mjs",
+    "fs-io.mjs"
   )
 
   $publishText = [System.IO.File]::ReadAllText($publishScript)
@@ -81,8 +85,8 @@ try {
       Copy-Item $src (Join-Path $stageScripts $name) -Force
     }
   }
-  # Optional helpers if present (mirrors publish optional loop).
-  foreach ($extra in @("payload-builder.mjs", "fs-io.mjs", "wait-shell.mjs", "control-plane.mjs", "thumb.mjs")) {
+  # Optional helpers if present (mirrors publish optional loop; fs-io/control-plane are required).
+  foreach ($extra in @("payload-builder.mjs", "wait-shell.mjs", "thumb.mjs")) {
     $src = Join-Path $runtimeScripts $extra
     if (Test-Path -LiteralPath $src) {
       Copy-Item $src (Join-Path $stageScripts $extra) -Force
@@ -141,12 +145,46 @@ console.log(JSON.stringify({ pass: true, export: "loadTheme" }));
     Add-Check "node:--check-injector" ($pCheck.ExitCode -eq 0) $(if ($pCheck.ExitCode -eq 0) { "syntax ok" } else { $errCheck.Trim() })
   }
 
-  # Fail closed if injector still imports theme-load but whitelist static check already covered.
+  # Fail closed: injector graph edges that must stay on the required whitelist.
   $injRepo = Join-Path $runtimeScripts "injector.mjs"
   if (Test-Path -LiteralPath $injRepo) {
     $injText = [System.IO.File]::ReadAllText($injRepo)
     $importsThemeLoad = $injText -match 'from\s+["'']\./theme-load\.mjs["'']'
     Add-Check "injector:imports-theme-load" $importsThemeLoad "injector.mjs must import ./theme-load.mjs"
+    # Dynamic: await import("./control-plane.mjs") — watch path; optional whitelist was the hole.
+    $importsControlPlane = $injText -match 'import\s*\(\s*["'']\./control-plane\.mjs["'']\s*\)'
+    Add-Check "injector:imports-control-plane" $importsControlPlane "injector.mjs must dynamic-import ./control-plane.mjs"
+  }
+
+  $cpRepo = Join-Path $runtimeScripts "control-plane.mjs"
+  if (Test-Path -LiteralPath $cpRepo) {
+    $cpText = [System.IO.File]::ReadAllText($cpRepo)
+    $cpImportsFsIo = $cpText -match 'from\s+["'']\./fs-io\.mjs["'']'
+    Add-Check "control-plane:imports-fs-io" $cpImportsFsIo "control-plane.mjs must import ./fs-io.mjs"
+  }
+
+  # Staged ESM: resolve control-plane + fs-io the same way install-state does.
+  if ($node -and (Test-Path -LiteralPath (Join-Path $stageScripts "control-plane.mjs"))) {
+    $cpOut = Join-Path $stage "cp-stdout.txt"
+    $cpErr = Join-Path $stage "cp-stderr.txt"
+    $cpCheckJs = @'
+import { startControlPlane, CONTROL_TOKEN_HEADER } from "./control-plane.mjs";
+if (typeof startControlPlane !== "function" || !CONTROL_TOKEN_HEADER) {
+  throw new Error("control-plane exports missing");
+}
+console.log(JSON.stringify({ pass: true, export: "startControlPlane" }));
+'@
+    $cpTmp = Join-Path $stageScripts "check-import-control-plane.mjs"
+    [System.IO.File]::WriteAllText($cpTmp, $cpCheckJs, [System.Text.UTF8Encoding]::new($false))
+    $pCp = Start-Process -FilePath $node.Source -ArgumentList @($cpTmp) `
+      -WorkingDirectory $stageScripts -Wait -PassThru -NoNewWindow `
+      -RedirectStandardOutput $cpOut `
+      -RedirectStandardError $cpErr
+    $cpStderr = if (Test-Path -LiteralPath $cpErr) { (Get-Content -LiteralPath $cpErr -Raw -ErrorAction SilentlyContinue) } else { "" }
+    if ($null -eq $cpStderr) { $cpStderr = "" }
+    $passCp = ($pCp.ExitCode -eq 0)
+    $detailCp = if ($passCp) { "control-plane import ok (staged ESM + fs-io)" } else { "exit=$($pCp.ExitCode) stderr=$($cpStderr.Trim())" }
+    Add-Check "node:import-control-plane" $passCp $detailCp
   }
 
   $failedCount = @($report.failed).Count
@@ -173,7 +211,7 @@ if ($Json) {
 } elseif (-not $report.ok) {
   Write-Host ("VERIFY FAIL exit={0} failed=[{1}]" -f $report.exitCode, ($report.failed -join ", "))
 } else {
-  Write-Host "VERIFY OK publish runtime payload closed (theme-load + required ESM graph)"
+  Write-Host "VERIFY OK publish runtime payload closed (theme-load + control-plane + required ESM graph)"
 }
 
 exit $report.exitCode

@@ -28,15 +28,18 @@ New-Item -ItemType Directory -Force -Path (Join-Path $dest "assets") | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $dest "core") | Out-Null
 
 # Runtime injector + assets from unified repo.
-# Required ESM graph for injector.mjs (injector-split S2+): missing any of these
-# → install-state ERR_MODULE_NOT_FOUND (theme-load was the Dual-B P0 hole).
+# Required ESM graph for injector.mjs (injector-split S2+ / wave8 control-plane):
+# missing any of these → install-state ERR_MODULE_NOT_FOUND
+# (theme-load Dual-B hole; control-plane+fs-io were optional until wave8).
 $runtime = Join-Path $RepoRoot "packages\runtime"
 $requiredRuntimeScripts = @(
   "injector.mjs",
-  "theme-load.mjs",          # import from injector (S2 extract)
+  "theme-load.mjs",          # static import from injector (S2 extract)
   "cdp-url-guard.mjs",
   "theme-catalog-budget.mjs", # import from theme-load
-  "image-metadata.mjs"        # import from theme-load
+  "image-metadata.mjs",       # import from theme-load
+  "control-plane.mjs",        # dynamic import from injector watch (kick/focus)
+  "fs-io.mjs"                 # import from control-plane
 )
 foreach ($name in $requiredRuntimeScripts) {
   $srcReq = Join-Path $runtime ("scripts\" + $name)
@@ -46,7 +49,7 @@ foreach ($name in $requiredRuntimeScripts) {
   Copy-Item $srcReq (Join-Path $dest ("scripts\" + $name)) -Force
 }
 # Optional / forward: payload-builder when extracted (S3); other helpers.
-foreach ($extra in @("payload-builder.mjs", "fs-io.mjs", "wait-shell.mjs", "control-plane.mjs", "thumb.mjs", "probe-session-dom.mjs")) {
+foreach ($extra in @("payload-builder.mjs", "wait-shell.mjs", "thumb.mjs", "probe-session-dom.mjs")) {
   $srcExtra = Join-Path $runtime ("scripts\" + $extra)
   if (-not (Test-Path -LiteralPath $srcExtra) -and $extra -eq 'probe-session-dom.mjs') {
     $srcExtra = Join-Path $RepoRoot "scripts\windows\probe-session-dom.mjs"

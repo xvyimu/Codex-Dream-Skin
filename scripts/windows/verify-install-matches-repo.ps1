@@ -95,9 +95,10 @@ try {
   Add-Check "repo packages/runtime" $true $repoRuntime
 
   # Files that must byte-match after a correct publish (control-plane is not version-stamped).
-  # theme-load.mjs is required after injector-split S2 (publish whitelist must ship it).
+  # theme-load.mjs required after injector-split S2; fs-io required with control-plane (wave8).
   $exactPairs = @(
     @{ Rel = "scripts\control-plane.mjs"; Required = $true },
+    @{ Rel = "scripts\fs-io.mjs"; Required = $true },
     @{ Rel = "scripts\cdp-url-guard.mjs"; Required = $true },
     @{ Rel = "scripts\theme-load.mjs"; Required = $true },
     @{ Rel = "scripts\theme-catalog-budget.mjs"; Required = $true },
