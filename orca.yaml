@@ -1,0 +1,3 @@
+# Orca worktree setup — pnpm monorepo (packageManager in package.json).
+scripts:
+  setup: pnpm install
