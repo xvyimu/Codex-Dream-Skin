@@ -5,120 +5,27 @@
  */
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import {
+  DEFAULT_CDP_PORT,
+  buildReport,
+  connectCdp,
+  finalizePass,
+} from "./lib/probe-kit.mjs";
 
-const PORT = 9335;
+const PORT = DEFAULT_CDP_PORT;
 const OUT = join(
   process.env.LOCALAPPDATA || "",
   "CodexDreamSkin",
   "probe-project-hd-result.json",
 );
 
-function validatedWs(url, port) {
-  const parsed = new URL(url);
-  if (
-    parsed.protocol !== "ws:" ||
-    parsed.hostname !== "127.0.0.1" ||
-    Number(parsed.port) !== port
-  ) {
-    throw new Error(`Rejected debugger URL: ${url}`);
-  }
-  return url;
-}
-
-class Cdp {
-  constructor(url) {
-    this.ws = new WebSocket(url);
-    this.nextId = 1;
-    this.pending = new Map();
-  }
-  async open() {
-    await new Promise((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error("ws open timeout")), 5000);
-      this.ws.addEventListener(
-        "open",
-        () => {
-          clearTimeout(t);
-          resolve();
-        },
-        { once: true },
-      );
-      this.ws.addEventListener(
-        "error",
-        () => {
-          clearTimeout(t);
-          reject(new Error("ws open failed"));
-        },
-        { once: true },
-      );
-    });
-    this.ws.addEventListener("message", (event) => {
-      let msg;
-      try {
-        msg = JSON.parse(String(event.data));
-      } catch {
-        return;
-      }
-      if (!msg.id) return;
-      const waiter = this.pending.get(msg.id);
-      if (!waiter) return;
-      clearTimeout(waiter.timeout);
-      this.pending.delete(msg.id);
-      if (msg.error) waiter.reject(new Error(msg.error.message));
-      else waiter.resolve(msg.result);
-    });
-    await this.send("Runtime.enable");
-    return this;
-  }
-  send(method, params = {}) {
-    return new Promise((resolve, reject) => {
-      const id = this.nextId++;
-      const timeout = setTimeout(() => {
-        this.pending.delete(id);
-        reject(new Error(`timeout ${method}`));
-      }, 12000);
-      this.pending.set(id, { resolve, reject, timeout });
-      this.ws.send(JSON.stringify({ id, method, params }));
-    });
-  }
-  async evaluate(expression) {
-    const result = await this.send("Runtime.evaluate", {
-      expression,
-      awaitPromise: true,
-      returnByValue: true,
-    });
-    if (result.exceptionDetails) {
-      throw new Error(
-        result.exceptionDetails.exception?.description ||
-          result.exceptionDetails.text,
-      );
-    }
-    return result.result?.value;
-  }
-  close() {
-    try {
-      this.ws.close();
-    } catch {}
-  }
-}
-
 async function main() {
-  const report = {
-    startedAt: new Date().toISOString(),
-    port: PORT,
-    pass: false,
-    checks: {},
-    notes: [],
-  };
+  const report = buildReport({ port: PORT });
 
-  const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
-  const page = list.find(
-    (item) => item.type === "page" && String(item.url || "").startsWith("app://"),
-  );
-  if (!page) throw new Error("no app:// page");
-  report.targetId = page.id;
-  report.title = page.title;
+  const { session, reportExtras } = await connectCdp({ port: PORT });
+  report.targetId = reportExtras.targetId;
+  report.title = reportExtras.title;
 
-  const session = await new Cdp(validatedWs(page.webSocketDebuggerUrl, PORT)).open();
   try {
     const snap = await session.evaluate(`(() => {
       const root = document.documentElement;
@@ -197,12 +104,7 @@ async function main() {
       required.push("taskArtSized", "taskAmbientVisible");
     }
 
-    const failed = required.filter((k) => !report.checks[k]);
-    report.failed = failed;
-    report.pass = failed.length === 0;
-    if (!report.pass) {
-      report.notes.push(`failed checks: ${failed.join(", ")}`);
-    }
+    finalizePass(report, required);
     if (report.checks.surfaceLumaPresent) {
       report.notes.push(`surfaceLuma=${snap.surfaceLuma}`);
     } else {
