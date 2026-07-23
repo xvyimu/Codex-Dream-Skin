@@ -37,3 +37,6 @@ apps/native/CodexFastLaunch/obj/
 artifacts/
 coverage/
 TestResults/
+
+# local tool (codebase-memory) - do not commit
+.cbmignore
