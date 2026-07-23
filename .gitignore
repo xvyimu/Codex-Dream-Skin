@@ -40,3 +40,6 @@ TestResults/
 
 # local tool (codebase-memory) - do not commit
 .cbmignore
+
+# Firecrawl CLI scrape/crawl cache (cwd/.firecrawl); never commit site dumps
+.firecrawl/
