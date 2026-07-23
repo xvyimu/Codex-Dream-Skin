@@ -6,9 +6,15 @@
 
 ---
 
-## Unreleased — maintenance on 1.3.25 product line（2026-07-20 → 07-22）
+## Unreleased — maintenance on 1.3.25 product line（2026-07-20 → 07-24）
 
-> 产品线版本仍为 **1.3.25**；安装态 runtimeId 以 doctor 为准（例 `1.3.25-107b0e`）。下列为扫描落地 + 任务卡收口，**未**改 SKIN_VERSION 产品线号。
+> 产品线版本仍为 **1.3.25**；安装态 runtimeId 以 doctor 为准（例 `1.3.25-107b0e` / 本机 `1.3.25-da2adc`）。下列为扫描落地 + 任务卡收口 + DAY 文档，**未**改 SKIN_VERSION 产品线号。
+
+### 文档 / OSS DAY 就绪（2026-07-24）
+
+- **装机就绪 runbook**：[`ops/cv-day-ready-2026-07-24.md`](./ops/cv-day-ready-2026-07-24.md) — 版本号来源 · arina preset · Startup 默认 off · 故障树；**无** asar / push。
+- **OSS L1 加深**：根 `.editorconfig`（UTF-8 / 2-space；ps1 允许 CRLF）。
+- 前序矩阵：[`ops/cv-oss-gap-2026-07-23.md`](./ops/cv-oss-gap-2026-07-23.md)（L0–L2 · Dependabot · arina-only）。
 
 ### 工程 / 独立产品线（ADR 0006）
 

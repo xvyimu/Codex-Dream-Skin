@@ -39,6 +39,11 @@
 - [codesign-decision-2026-07-21](./plans/codesign-decision-2026-07-21.md)
 - [residual-g1-g3-g4-g5-2026-07-20](./plans/residual-g1-g3-g4-g5-2026-07-20.md)
 
+## 3b. 运维 / DAY 就绪（ops）
+
+- [cv-oss-gap-2026-07-23](./ops/cv-oss-gap-2026-07-23.md) — OSS L0–L2 矩阵 · arina-only · Startup off  
+- [cv-day-ready-2026-07-24](./ops/cv-day-ready-2026-07-24.md) — 装机就绪 runbook（版本源 · preset · 自启 · 故障树）
+
 ## 4. 审计 / 报告（仓内）
 
 - [AUDIT-2026-07-20](./AUDIT-2026-07-20.md) · [SCAN-OPTIMIZE-2026-07-20](./SCAN-OPTIMIZE-2026-07-20.md)
