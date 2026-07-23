@@ -9,6 +9,18 @@
 > **产品显示名**（开始菜单 / 安装路径 `CodexDreamSkin`）与 GitHub 仓名分离。  
 > 身份卡：[GITHUB_IDENTITY.md](./GITHUB_IDENTITY.md)
 
+## 产品方案与文档地图
+
+| 文档 | 用途 |
+|------|------|
+| [PRODUCT-LAYERS](docs/PRODUCT-LAYERS.md) | L0 身份 · L4 验收命令 |
+| [PROJECT](docs/PROJECT.md) | 形态与栈 SSOT · 边界 · 验收 |
+| [CONTRIBUTING](CONTRIBUTING.md) | 贡献入口（公开 Issue/PR） |
+| [SECURITY](SECURITY.md) | 漏洞报告（勿公开 Issue） |
+| [ARCHITECTURE](docs/ARCHITECTURE.md) | 实现映射 · 调用链 |
+
+协作详规与威胁模型长文：[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) · [`docs/SECURITY.md`](docs/SECURITY.md)。
+
 ## 它是什么
 
 统一 **Codex Desktop CDP 换肤** 产品线：单条 watch injector 守护 + 多主题热切换（F6 / 托盘 / CLI）。
