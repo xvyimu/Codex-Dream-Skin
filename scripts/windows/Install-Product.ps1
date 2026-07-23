@@ -425,7 +425,7 @@ Write-Host "Installed Codex Dream Skin $version ($runtimeId)"
 Write-Host "Next:"
 Write-Host "  1) Ensure OpenAI Codex (Store) is installed"
 Write-Host "  2) Click taskbar / Start Menu Codex (if injector not already running)"
-Write-Host "  3) Optional: node `"$cliRoot\packages\core\cli.mjs`" apply --theme genshin-night"
+Write-Host "  3) Optional: node `"$cliRoot\packages\core\cli.mjs`" apply --theme preset-arina-hashimoto"
 Write-Host "  4) Optional: node `"$cliRoot\packages\core\cli.mjs`" doctor"
 Write-Host "Note: Store tile bare launch is an OS limit — use the taskbar pin."
 

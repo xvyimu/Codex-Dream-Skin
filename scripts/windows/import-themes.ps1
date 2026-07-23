@@ -31,4 +31,4 @@ if (-not $KeepUnlocked -and (Test-Path -LiteralPath $lockScript)) {
   Write-Host "To re-lock single-skin mode later: $lockScript"
 }
 
-Write-Host "Done. Use: node packages/core/cli.mjs apply --theme genshin-night"
+Write-Host "Done. Use: node packages/core/cli.mjs apply --theme preset-arina-hashimoto"

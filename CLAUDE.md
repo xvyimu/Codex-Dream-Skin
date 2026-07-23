@@ -1,6 +1,6 @@
 # Codexveil
 
-Codex Desktop 换肤：DreamSkin 启动/守护 + 多主题。Node ≥20，ESM。  
+Codex Desktop 换肤：DreamSkin 启动/守护；仓内内置 arina-only（用户 catalog 可自建）。Node ≥20，ESM。  
 仓：`D:\orca\Codexveil` · GitHub `xvyimu/Codexveil` · 安装态：`%LOCALAPPDATA%\Programs\CodexDreamSkin`
 
 > 与 `AGENTS.md` **同大纲**；改一处请同步另一处意图。

@@ -196,7 +196,7 @@ After install
   3. Tools: Start Menu -> Codex 工具 (repair / post-update / usage)
   4. CLI:
      node "%LOCALAPPDATA%\Programs\CodexDreamSkin\cli\packages\core\cli.mjs" list
-     node "...\cli.mjs" apply --theme genshin-night
+     node "...\cli.mjs" apply --theme preset-arina-hashimoto
 
 NOTE
   Store tile bare launch cannot be rewritten (Windows package AUMID). Prefer the taskbar pin.

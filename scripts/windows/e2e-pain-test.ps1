@@ -145,8 +145,8 @@ $sw = [Diagnostics.Stopwatch]::StartNew()
 try {
   $cli = Join-Path $repo 'packages\core\cli.mjs'
   $ids = @(Get-ChildItem (Join-Path $stateRoot 'themes') -Directory | Select-Object -ExpandProperty Name)
-  $a = if ($ids -contains 'genshin-night') { 'genshin-night' } else { $ids[0] }
-  $b = if ($ids -contains 'romantic-rose') { 'romantic-rose' } else { $ids[1] }
+  $a = if ($ids -contains 'preset-arina-hashimoto') { 'preset-arina-hashimoto' } elseif ($ids.Count -ge 1) { $ids[0] } else { throw 'no themes in catalog' }
+  $b = if ($ids.Count -ge 2) { $ids[1] } else { $a }
   $r1 = Invoke-Timed -FilePath 'node' -ArgumentList @($cli,'apply','--theme',$a) -TimeoutSec 30
   Start-Sleep -Milliseconds 500
   $r2 = Invoke-Timed -FilePath 'node' -ArgumentList @($cli,'apply','--theme',$b) -TimeoutSec 30

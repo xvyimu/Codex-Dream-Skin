@@ -35,8 +35,8 @@ function assert(cond, msg) {
 {
   const m = validateThemeManifest({
     schemaVersion: 1,
-    id: "genshin-night",
-    name: "原神 · 星夜",
+    id: "sample-heige-theme",
+    name: "Sample Heige Theme",
     hero: "hero.webp",
     colors: {
       accent: "#e0b458",

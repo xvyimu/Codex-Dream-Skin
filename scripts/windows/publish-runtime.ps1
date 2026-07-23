@@ -392,7 +392,7 @@ Published.
 Next:
   1) Close Codex completely if a naked/old session is stuck
   2) Click taskbar Codex (Dream Skin launcher) to start watch injector on 9335
-  3) node `"$RepoRoot\packages\core\cli.mjs`" apply --theme genshin-night
+  3) node `"$RepoRoot\packages\core\cli.mjs`" apply --theme preset-arina-hashimoto
   4) node `"$RepoRoot\packages\core\cli.mjs`" doctor
   5) Optional session DOM probe after opening a chat:
      node `"$programRoot\probe-session-dom.mjs`"
