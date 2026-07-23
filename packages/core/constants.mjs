@@ -25,7 +25,8 @@ export const STATE_SCHEMA_NODE_MARKER = 1;
 export const STATE_SCHEMA_VERSION = STATE_SCHEMA_NODE_MARKER;
 /** theme.json / catalog manifest schema (heige + DreamSkin dual-format). */
 export const THEME_SCHEMA_VERSION = 1;
-export const DEFAULT_THEME_ID = "miku-488137";
+/** CLI/empty-catalog fallback; must match sole bundled theme under themes/ (arina-only). */
+export const DEFAULT_THEME_ID = "preset-arina-hashimoto";
 
 /** 与 DreamSkin / 现网 Store Codex 会话对齐的默认 CDP 端口 */
 export const DEFAULT_CDP_PORT = 9335;

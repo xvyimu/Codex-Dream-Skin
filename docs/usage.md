@@ -2,7 +2,7 @@
 
 > 目标：你只记「点 Codex」。开得了、回得来、坏了能修、能换多套皮肤。
 
-开发仓：`D:\orca\codex-skin`  
+开发仓：`D:\orca\Codexveil`（入口 `D:\projects\Codexveil`）  
 安装态：`%LOCALAPPDATA%\Programs\CodexDreamSkin`（runtime 1.3.25+）
 
 ---
@@ -80,18 +80,16 @@ powershell -File "$env:LOCALAPPDATA\Programs\CodexDreamSkin\open-codex-dream-ski
 ### 窗口内 F6（代码已恢复 · 需 publish 对齐装态）
 
 仓内 `renderer-inject` 支持 **F6** / **Shift+F6** 循环 **本机 catalog**，并 toast `名称（i/N）`；STATE 暴露 `catalog` / `setTheme` / `cycleTheme`。  
-装态 payload 以 `current.json.runtimeId` 为准；开发可用 repo 树 injector `--watch` 验证。
+装态 payload 以 `current.json.runtimeId` 为准。若窗内 F6 无感而仓内已有修复：维护者跑 `publish-runtime.ps1 -Version <线>` 刷新 `versions/<id>/`；开发可用 repo 树 injector `--watch` 验证。
 
 | 方式 | 操作 |
 |------|------|
 | 窗内（publish 后 / dev watch） | **F6** 下一主题 · **Shift+F6** 上一主题（catalog≥2 时有感） |
 | 图形 | 开始菜单 / 桌面 **Codex 换肤** |
 | 托盘 | 系统托盘 → **切换皮肤（N）** |
-| CLI | `node packages/core/cli.mjs apply --theme <id>` |
+| CLI | `node packages/core/cli.mjs apply --theme <id>`（省略 `--theme` → `DEFAULT_THEME_ID` = `preset-arina-hashimoto`） |
 
-F6 为注入态瞬切，**不**写 active-theme；持久换肤仍用托盘 / 面板 / CLI。见 [`PAIN-POINTS.md`](./PAIN-POINTS.md) **#25**。
-
-**开机自启：** 默认 **关闭**（`install-ux-shortcuts.ps1` 会移除旧 Startup lnk，publish 不重建）。需要时自行在「启动」里添加 `CodexFastLaunch.exe`。
+F6 为注入态瞬切，**不**写 active-theme；持久换肤仍用托盘 / 面板 / CLI。见 [`PAIN-POINTS.md`](./PAIN-POINTS.md) **#25**。开机自启默认关闭见上表「日常怎么用」。
 
 ### 消息气泡样式（对比）
 

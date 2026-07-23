@@ -210,7 +210,11 @@ function assert(cond, msg) {
   const bundledRoot = join(repoRoot, "themes");
   const entries = await readdir(bundledRoot, { withFileTypes: true });
   const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name).sort();
-  assert(dirs.length >= 1, `bundled theme count >= 1 (arina-only; got ${dirs.length})`);
+  assert(dirs.length === 1, `bundled theme count === 1 (arina-only; got ${dirs.length}: ${dirs.join(",")})`);
+  assert(
+    dirs[0] === "preset-arina-hashimoto",
+    `sole bundled theme id is preset-arina-hashimoto (got ${dirs[0]})`,
+  );
   let loadedCount = 0;
   for (const id of dirs) {
     const dir = join(bundledRoot, id);

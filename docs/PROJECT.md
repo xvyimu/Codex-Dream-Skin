@@ -416,10 +416,10 @@ node packages/core/cli.mjs list
 node packages/core/cli.mjs status
 node packages/core/cli.mjs help
 
-# 热切换（需 injector 存活；Codex 可后开）
-node packages/core/cli.mjs apply --theme genshin-night
+# 热切换（需 injector 存活；Codex 可后开；省略 --theme → DEFAULT_THEME_ID=arina）
+node packages/core/cli.mjs apply --theme preset-arina-hashimoto
 
-# 导入内置主题到用户 catalog
+# 导入仓内内置主题到用户 catalog（现行 arina-only）
 node packages/core/cli.mjs import-themes
 
 # 发布
@@ -553,7 +553,7 @@ paused/locked: false（正常使用时）
 | 1.3.18 | heige-fused 视觉（右半 hero · 左上 brand · 单岛 composer） |
 | 1.3.19–1.3.21 | 会话 probe 实锤 · 气泡去描边 · D3D Enable · open-healthy 异步 · FastLaunch |
 | 1.3.22–1.3.24 | publish reattach · UTF-8 控制台 · tray native focus · wait-shell 冷启 |
-| 1.3.25 + `f833ee8` | 安装 runtime 1.3.25-4dca30；git 主题 catalog 11 套 + schema 双格式 |
+| 1.3.25 + `f833ee8` | 安装 runtime 1.3.25-4dca30；主题 schema 双格式（现行内置 arina-only） |
 | v6 调研（2026-07-21） | 闪白根因补丁 `48b5bae` 全量透传 palette 四色 · HD art + 气泡双模式（`0326abb`）· v5 假关闭教训 · BASELINE；**已 squash 合 main**（PR #1 · `b80bf4e`） |
 | v7 门禁/证据（2026-07-21） | `probe-project-hd` 断言化 · RELEASE-EVIDENCE CI URL · BASELINE 对齐 tip · overview/CHANGELOG · surfaceLuma `#rrggbb` 边界文档 | 
 
@@ -602,7 +602,7 @@ codex-skin/
 │   ├── runtime/             # L4 自包含发布蓝图
 │   └── core-win/            # L1/L2 Windows 共享库
 ├── scripts/windows/         # 发布 · 探针 · E2E
-├── themes/                  # 11 套内置主题源（含 preset-arina-hashimoto）
+├── themes/                  # 内置主题源（arina-only · preset-arina-hashimoto）
 ├── docs/                    # 本文件与 ADR 等
 ├── package.json             # bin: codex-skin → cli.mjs
 └── CLAUDE.md                # Agent 短索引
@@ -643,7 +643,7 @@ codex-skin/
 |----|-----|
 | Codex 包 | `OpenAI.Codex_26.715.4045.0` |
 | Runtime | `1.3.25-*`（以 `current.json` / doctor `injectorPathFreshness` 为准） |
-| 用户主题 | 11 套（import-themes · list 去重） |
+| 内置主题 | **arina-only**（`preset-arina-hashimoto`；用户可自建 catalog） |
 | 热切换 | kick ~55–80ms 量级 |
 | Git | `main`：以 `git rev-parse HEAD` 为准；审计见 AUDIT-2026-07-20 |
 | 产品线身份 | ADR 0006 · 仅 `origin` · 无 vendor/research 树 |
@@ -651,9 +651,11 @@ codex-skin/
 | package.json | `"version": "1.3.25"`（产品线元数据；stamp 权威仍是 publish `-Version`） |
 | 主题门禁 | `npm run test:themes` |
 
-## 附录 B · 内置/用户主题 ID
+## 附录 B · 内置主题 ID
 
-`dalao-dianyan` · `naruto-hokage` · `naruto-sasuke` · `deepspace-dawn` · `deepspace-star` · `wuthering-echo` · `wuthering-tide` · `preset-arina-hashimoto` · `genshin-dawn` · `genshin-night` · `miku-488137`
+**现行（arina-only）：** `preset-arina-hashimoto`（仓内 `themes/` 唯一内置；CLI `DEFAULT_THEME_ID` 同 id）。
+
+用户自建/导入主题写入 `%LOCALAPPDATA%\CodexDreamSkin\themes\<id>`，**不**自动扩仓内 catalog。历史 11 套 id 仅存 git 历史，扩内置须 ADR。
 
 ## 附录 C · ADR 索引
 

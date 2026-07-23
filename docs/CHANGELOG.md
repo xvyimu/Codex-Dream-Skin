@@ -31,7 +31,7 @@
 
 - **U3 换肤成功轻反馈**：`Show-CodexSkinApplyFeedback` + `ui-prefs.json`（`applyBalloonEnabled`，默认真）；托盘菜单可关；换肤面板 / 托盘切换 / CLI `apply` 统一尊重开关；托盘切换补 control-plane kick。
 - **U4 首次入口提示**：`Show-CodexSkinFirstRunGuide` 文案强化「任务栏 Codex / 勿商店磁贴」；`first-run-shown.flag` 一次性；**不**劫持 AUMID。
-- **B 可读性门禁**：`validateThemeManifest` 对 `text`/`surface` 做对比度启发式（≥4.5）；`test:themes` 含低对比拒绝夹具；11 套内置主题实测通过。
+- **B 可读性门禁**：`validateThemeManifest` 对 `text`/`surface` 做对比度启发式（≥4.5）；`test:themes` 含低对比拒绝夹具；内置 **arina-only** 实测通过（历史 11 套叙述废止）。
 - **视觉回归（开项目不闪白）**：`renderer-inject` 用 palette.surface 亮度强制 dark/light；`appearance:auto` 缺省回落 dark；路由短暂无 `main` 时**不清皮肤**。全量透传 palette 四色。本机 CDP 探针 `probe-white-flash.mjs`：**pass**。
 - **项目页高清皮肤** / **消息气泡双模式** / **#25 F6** 文档对齐。
 - **BASELINE**：随 HEAD / 安装 runtime 脚本刷新。

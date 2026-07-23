@@ -9,10 +9,10 @@
 
 - **日常入口**：开始菜单 / 任务栏 / 桌面 **Codex**（→ `CodexFastLaunch.exe`）
 - **安装态根**：`%LOCALAPPDATA%\Programs\CodexDreamSkin\`（产品显示名未随 GitHub 改名）
-- **开发仓**：`D:\orca\codex-skin`（入口 junction：`D:\orca\Codexveil`）
+- **开发仓**：`D:\orca\Codexveil`（入口 junction：`D:\projects\Codexveil`）
 - **默认 CDP 端口**：9335
 - **控制面端口**：9336（loopback）
-- **产品线**：DreamSkin 级守护 + heige 级多主题（合并前是两条独立线）
+- **产品线**：DreamSkin 级守护 + heige 主题模型（历史双线已合并；现行 **内置 arina-only**，用户可自建 catalog）
 - **当前主线**：runtime `1.3.25` · 内置主题 **arina-only**（`preset-arina-hashimoto`）· 产品 zip 分发
 
 ---
