@@ -1,24 +1,24 @@
 {
-  "schemaVersion": 1,
-  "id": "preset-arina-hashimoto",
-  "name": "桥本有菜",
-  "hero": "hero.jpg",
   "colors": {
-    "accent": "#E8A0BF",
+    "text": "#FFF0F5",
     "secondary": "#C9A0DC",
     "surface": "#1A1218",
-    "text": "#FFF0F5"
-  },
-  "copy": {
-    "brand": "CODEX DREAM SKIN",
-    "tagline": "把柔光与玫瑰带进今天的工作台。",
-    "headline": "MAKE SOMETHING WONDERFUL"
+    "accent": "#E8A0BF"
   },
   "art": {
-    "focusX": 0.72,
     "focusY": 0.45,
-    "safeArea": "left",
-    "taskMode": "ambient"
+    "taskMode": "ambient",
+    "focusX": 0.72,
+    "safeArea": "left"
   },
-  "statusText": "DREAM SKIN ONLINE"
+  "id": "preset-arina-hashimoto",
+  "statusText": "DREAM SKIN ONLINE",
+  "copy": {
+    "headline": "MAKE SOMETHING WONDERFUL",
+    "tagline": "把柔光与玫瑰带进今天的工作台。",
+    "brand": "CODEX DREAM SKIN"
+  },
+  "schemaVersion": 1,
+  "hero": "hero.jpg",
+  "name": "桥本有菜"
 }
