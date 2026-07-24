@@ -1,82 +1,73 @@
 # Codexveil · cv-long-wave progress
 
-**总控：** `cv-coord` · `xvyimu/cv-coord` @ **`fb792e0`+**（本轮将再 commit）  
+**总控：** `cv-coord` · `xvyimu/cv-coord`  
 **产品：** `D:\orca\Codexveil` · base `main` @ `ebc3568`  
-**红线：** 单 injector · 禁 asar · 禁 vendor · 禁擅自 publish · **feature push OK**  
+**红线：** 单 injector · 禁 asar · 禁 vendor · 禁 publish · 禁 push **main** · feature push OK  
 
 SSOT：[`WEEK-BACKLOG.md`](./WEEK-BACKLOG.md)
 
 ---
 
-## 0. 状态机（2026-07-24 催办后）
+## 0. 状态机（强制续航巡检）
 
-| 项 | 状态 |
+| ID | 状态 | tip / 注 |
+|----|------|----------|
+| W1 scout | **ACCEPT** | `9e2ba87` origin |
+| W2 themes | **ACCEPT NO-CODE** | `65c38a3` origin |
+| W3 fix | **SKIP** | 无红 |
+| W4 doctor-smoke | **ACCEPT** | `2aa2b0b` origin |
+| W5 cdp-url | **ACCEPT NO-CODE** | `5032a98` origin · exit cdp/fresh/deps **0** |
+| W6 catalog-budget | **ACCEPT NO-CODE** | `fb9f4d4` origin · budget+quality **0** |
+| W7 launcher | QUEUED | 后置 |
+| W8 core-runtime | **ACCEPT NO-CODE** | `f08112c` origin · deps **0** · 互引 0 |
+| **W9** arina-only docs | **LIVE** | |
+| **W10** pain-close | **LIVE** | |
+| W11 adr0005 | **ACCEPT** | `b4cbc94` origin · 零壳 |
+| **W12** long-verify | **LIVE** | |
+| W13 INTEGRATE | QUEUED | 等 W12 · **publish 另授** |
+
+**live 3/3：** W9 · W10 · W12  
+**code-review findings 路径：** 本轮未发现待消化 P0/P1 文件；无 fix wt。
+
+### 0.1 本轮动作
+
+1. list/ps：W5/W6/W8 evidence DONE · origin 已齐  
+2. 总控审 PASS → stop/rm 三 wt  
+3. 开 W9/W10/W12  
+4. feature 支 origin 保留 tip；**未** push main  
+
+### 0.2 门闩累计（evidence 已记 exit）
+
+| 面 | exit |
 |----|------|
-| W1 scout | **ACCEPT** · `9e2ba87` · **origin 已 push** |
-| W2 themes-contracts | **ACCEPT** · `65c38a3` · origin · wt **rm** · **NO-CODE PASS** |
-| W3 store-adapter-fix | **SKIP**（W2 全绿无红） |
-| W4 doctor-smoke-docs | **ACCEPT** · `2aa2b0b` · origin · wt **rm** |
-| W11 adr0005 DEFER | **ACCEPT** · `b4cbc94` · origin · wt **rm** · 零壳代码 |
-| **W5** cdp-url-guard | **LIVE** |
-| **W6** catalog-budget | **LIVE** |
-| **W8** core-runtime-boundary | **LIVE** |
-| W7/W9/W10/W12/W13 | QUEUED |
-
-**live 槽：** 3/3（W5 · W6 · W8）
-
-### 0.1 催办收口摘要
-
-| 动作 | 结果 |
-|------|------|
-| 三线 dirty | 仅 seed untracked（brief/scout 拷贝）→ **丢弃未提交**；产物已在 tip commit |
-| stop/rm | W2/W4/W11 wt **force rm** · branch 在 origin 保留 |
-| push feature | scout **新 push**；W2/W4/W11/coord **origin 已齐**（rm 前已跟踪） |
-| W3 | **未开**（无失败项） |
-
-### 0.2 origin 支 tip
-
-| branch | tip | 内容 |
-|--------|-----|------|
-| xvyimu/cv-scout-health | `9e2ba87` | Phase0 evidence |
-| xvyimu/cv-themes-contracts | `65c38a3` | W2 NO-CODE |
-| xvyimu/cv-doctor-smoke-docs | `2aa2b0b` | map + evidence |
-| xvyimu/cv-adr0005-onepager | `b4cbc94` | DEFER 1 页 |
-| xvyimu/cv-coord | `fb792e0`→本轮 | long-wave SSOT |
+| themes / store / adapter / contracts | **0**（W2） |
+| doctor（idle） | **0**（W1/W4） |
+| cdp-url / freshness / deps | **0**（W5/W8） |
+| catalog-budget / quality | **0**（W6） |
+| `npm test` 全量 | **待 W12** |
 
 ---
 
-## 1. 名表（orca）
+## 1. orca 名表
 
 | displayName | branch | status |
 |-------------|--------|--------|
 | main | main | 主 |
 | cv-coord | xvyimu/cv-coord | 总控 |
-| cv-cdp-url-guard | xvyimu/cv-cdp-url-guard | **LIVE W5** |
-| cv-catalog-budget | xvyimu/cv-catalog-budget | **LIVE W6** |
-| cv-core-runtime-boundary | xvyimu/cv-core-runtime-boundary | **LIVE W8** |
+| cv-theme-arina-only-docs | xvyimu/cv-theme-arina-only-docs | **LIVE W9** |
+| cv-pain-close-batch | xvyimu/cv-pain-close-batch | **LIVE W10** |
+| cv-long-verify | xvyimu/cv-long-verify | **LIVE W12** |
 
 ---
 
-## 2. 审核结论（W2/W4/W11）
+## 2. 下一批
 
-| 卡 | 边界 | exit / 要点 | 审核 |
-|----|------|-------------|------|
-| W2 | 无业务码 | themes/store/adapter/contracts **全 0** | **PASS** |
-| W4 | 无 injector 改 | doctor **0** · fresh · smoke **skipped**（Codex idle）· map 齐 | **PASS** |
-| W11 | 无壳代码 | DEFER 页钉 Proposed | **PASS** |
+W9–W12 收齐 → 可选 W7 launcher 小稳 → **W13 INTEGRATE.md**（合入计划 · 不自动 merge main · publish 另授）
 
 ---
 
-## 3. 下一批（槽空后）
+## 3. 红线
 
-W9 arina-only docs · W10 pain-close · W7 launcher · W12 long-verify · W13 INTEGRATE  
-
----
-
-## 4. 红线复核
-
-- [x] 无 asar  
-- [x] 无第二 injector  
-- [x] 无 vendor  
-- [x] 无 publish  
-- [x] feature push 仅 feature 支  
+- [x] 无 asar / 第二 injector / vendor / publish / push main  
+- [x] evidence 含 exit  
+- [x] live ≤3  
