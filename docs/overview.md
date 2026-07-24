@@ -42,7 +42,9 @@
 ## 3b. 运维 / DAY 就绪（ops）
 
 - [cv-oss-gap-2026-07-23](./ops/cv-oss-gap-2026-07-23.md) — OSS L0–L2 矩阵 · arina-only · Startup off  
-- [cv-day-ready-2026-07-24](./ops/cv-day-ready-2026-07-24.md) — 装机就绪 runbook（版本源 · preset · 自启 · 故障树）
+- [cv-day-ready-2026-07-24](./ops/cv-day-ready-2026-07-24.md) — 装机就绪 runbook（版本源 · preset · 自启 · 故障树）  
+- [cv-runtime-gap-card-2026-07-25](./ops/cv-runtime-gap-card-2026-07-25.md) — tip vs install runtime 对照 · 默认不 publish  
+- [cv-pain-close-batch-evidence-2026-07-24](./ops/cv-pain-close-batch-evidence-2026-07-24.md) — W10 PAIN 关单证据表（#21/#24/#25 不关）
 
 ## 4. 审计 / 报告（仓内）
 

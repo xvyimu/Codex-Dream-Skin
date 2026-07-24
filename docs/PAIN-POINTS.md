@@ -3,6 +3,10 @@
 > 由 `docs/e2e-pain-points-2026-07-19.md`（1.3.2 首轮 E2E）与
 > `docs/ux-deep-pain-1.3.9.md`（1.3.9 深度走查）合并。
 > 表格中"版本"= 首次记录该项的 runtime。"状态"= 迁到 1.3.13 时的实况。
+>
+> **W10 关单审计（2026-07-24）：** 仅文档证据批 · **不**假关。
+> 详见 [`ops/cv-pain-close-batch-evidence-2026-07-24.md`](./ops/cv-pain-close-batch-evidence-2026-07-24.md)。
+> #1–#20 / #22 / #23 保持已关；**#21 / #24 硬限**；**#25 保持开放**（禁假关 publish 叙事 · live F6 未 smoke）。
 
 ---
 

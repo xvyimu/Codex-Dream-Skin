@@ -15,6 +15,7 @@
 - **装机就绪 runbook**：[`ops/cv-day-ready-2026-07-24.md`](./ops/cv-day-ready-2026-07-24.md) — 版本号来源 · arina preset · Startup 默认 off · 故障树；**无** asar / push。
 - **OSS L1 加深**：根 `.editorconfig`（UTF-8 / 2-space；ps1 允许 CRLF）。
 - 前序矩阵：[`ops/cv-oss-gap-2026-07-23.md`](./ops/cv-oss-gap-2026-07-23.md)（L0–L2 · Dependabot · arina-only）。
+- **W10 PAIN 关单证据批**：[`ops/cv-pain-close-batch-evidence-2026-07-24.md`](./ops/cv-pain-close-batch-evidence-2026-07-24.md) — #1–#20/#22/#23 保持已关；**#21/#24 硬限**；**#25 不关**（无 live F6 smoke · 禁假关）；**无** publish / asar / push。
 
 ### 工程 / 独立产品线（ADR 0006）
 
