@@ -152,7 +152,45 @@ npm test          # expect exit 0
 |----|-----|
 | W13 | **READY_FOR_HUMAN_GATE** |
 | 自动 merge main | **否** |
-| 总控是否停 | **否** · 保持巡检 / 等人批；**不**叠新实现 wt 除非人改北极星 |
-| 下一动作 | 人按 §2 合入 · 或明确授权 integrate PR |
+| 总控是否停 | **否** · 保持巡检 / 等人批；**不**叠新实现 wt 除非人改北极星或 findings 有 **P0** |
+| 下一动作 | 人按 §2 合入 · 或明确授权 integrate PR · findings 见 §6 |
 
 **风险一句：** docs 多支 merge 冲突面小但 **W4 改 usage/day-ready**、**W10 改 PAIN** 须人眼；装态 `1.3.25-da2adc` **不**因合 docs 而变。
+
+---
+
+## 6. Code-review findings 并入（2026-07-24 · portfolio stack-policy）
+
+**源：** `D:\orca\.planning\portfolio-stack-policy-2026-07-24\code-review\codexveil-findings.md`  
+**审查员：** OpenCode · luna/grok-4.5 · 只读  
+**栈结论：** **不换栈** · 形态/单 injector/asar 红线 **对齐** · **无新 P0**
+
+### 6.1 分级与本波处置
+
+| 级 | id | 症状 | 仓内已有证据 / 缓解 | 总控处置 |
+|----|-----|------|---------------------|----------|
+| **P0** | — | 无新 P0 | PROJECT 红线 · apply 不启第二 injector | **不开 fix wt** |
+| P1 | **CV-CR-001** | CDP 9335 本机信任边界；勿暴露局域网 | `docs/SECURITY.md` 威胁模型：CDP/控制面 **127.0.0.1 only** · `cdp-url-guard` | **docs 加固** · wt `cv-cr-cdp-bind-docs`（可选） |
+| P1 | **CV-CR-002** | `/kick` 控制面须 loopback | `control-plane.mjs` **`s.listen(port, "127.0.0.1")`** · 文件头 Bind 注释 · `test:control` | **已码侧满足**；docs/测可再钉 · 并入同一 docs wt 或 **DEFER 测** |
+| P1 | **CV-CR-003** | injector 路径漂移 | W5 freshness 全 0 · doctor `injectorPathFreshness` · W12 | **已覆盖** · 合入 W5/W12 证据即可 |
+| P1 | **CV-CR-004** | 主题 art 体积 → CDP 卡顿 | W6 catalog-budget/quality **0** · 8 主题/96KiB/1.6MiB | **已覆盖** |
+| P1 | **CV-CR-005** | 走错入口无 watch | dual-open-policy · W4 doctor map · W7 launcher 路径表 | **已覆盖**（合入 W4/W7） |
+| P1 | **CV-CR-006** | ADR-0005 未 Accepted 开工壳 | W11 DEFER 一页 · Proposed | **已覆盖**（合入 W11） |
+| P2 | CV-CR-010…015 | CI/macOS/#21 等 | 长波门闩 + PAIN 硬限 | **不单开 wt** · 合入证据 / 维持不做 |
+
+### 6.2 对「人 gate 合入」的增量要求
+
+1. **合入序不变**（§2）；findings **不**阻塞 docs 合入。  
+2. 合入后 / 并行可选：`cv-cr-cdp-bind-docs` 补强 doctor map + SECURITY 运维句（**勿端口转发 9335/9336**）。  
+3. **不要**因 findings 开壳实现、asar、第二 injector、macOS 主路径。  
+4. 建议验收（审查员）：`npm test` · `npm run doctor` · 可选 `npm run test:control`（需 loopback）。
+
+### 6.3 findings → fix wt 策略
+
+| 条件 | 动作 |
+|------|------|
+| 新 **P0** | 立刻 `cv-fix-*` · live≤2 · 人优先于 integrate |
+| 仅 P1 且码侧已满足（001/002 大部） | **并入本 INTEGRATE 等人** + 最多 1 个 **docs** fix |
+| P2 | 不单开 · 记 backlog |
+
+**本轮：** 无 P0 → **维持 READY_FOR_HUMAN_GATE**；可选 live≤1 docs wt 消化 001 文案。
