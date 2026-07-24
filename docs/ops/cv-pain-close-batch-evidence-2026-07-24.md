@@ -2,7 +2,7 @@
 
 **MODE：** `pain-close-batch` · **WRITE_POLICY：** `local-commit`（仅 docs + 状态列；**禁止** asar / publish-runtime / 第二 injector / 改业务码 / push）  
 **WT / 支：** `C:\Users\yuanjia\orca\workspaces\Codexveil\cv-pain-close-batch` · `xvyimu/cv-pain-close-batch`  
-**对照 tip：** `ebc3568`（开工）→ 本会话 commit 后更新  
+**对照 tip：** 开工 `ebc3568` · **本卡 commit `76d5890`**  
 **装机：** `current.json` · **`runtimeId=1.3.25-da2adc`** · `version=1.3.25` · `updatedAt=2026-07-22T19:44:02Z`  
 **STACK_SSOT：** [`docs/PROJECT.md`](../PROJECT.md) §1.5  
 **对照源：** [`PAIN-POINTS.md`](../PAIN-POINTS.md) · [`cv-runtime-gap-card-2026-07-25.md`](./cv-runtime-gap-card-2026-07-25.md) · [`cv-day-ready-2026-07-24.md`](./cv-day-ready-2026-07-24.md) · [`w4-arch-upgrade-codexveil-claude.md`](./w4-arch-upgrade-codexveil-claude.md) · [`w1-arch-upgrade-codexveil-claude.md`](./w1-arch-upgrade-codexveil-claude.md) · [`dual-open-policy.md`](../dual-open-policy.md) · [`RELEASE-EVIDENCE.md`](../RELEASE-EVIDENCE.md) · [`plans/codesign-decision-2026-07-21.md`](../plans/codesign-decision-2026-07-21.md)
@@ -23,7 +23,7 @@
 
 | 项 | 值 |
 |----|-----|
-| tip (开工) | `ebc3568` |
+| tip (开工 → 本卡) | `ebc3568` → **`76d5890`** |
 | install `current.json` | `1.3.25` / **`1.3.25-da2adc`** |
 | `state.json` | `runtimeId=1.3.25-da2adc` · `controlPort=9336` · injectorPath → 同 versions |
 | tip vs install `renderer-inject.js` | **SHA256 相同** · 归一 content 相等 · 两侧均含 `setTheme` / `cycleTheme` / `F6` keydown |
@@ -125,7 +125,7 @@
 | evidence 表 ID·原状态·新/保持·指针·风险 | **§2** |
 | 不关清单 + 原因 | **§3** |
 | 仅硬证据 | **是**（代码路径 + doctor/gap；无虚构 live F6） |
-| commit | 本批 local commit |
+| commit | **`76d5890`** `docs(ops): W10 PAIN close-batch evidence (no fake-close)` |
 | 状态 | **DONE · in-review · 停** |
 
 **Agent 停步：** 不 publish、不 push、不改 runtime、不关 #21/#24/#25。
