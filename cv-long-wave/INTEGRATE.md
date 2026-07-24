@@ -31,7 +31,8 @@
 | W10 | `xvyimu/cv-pain-close-batch` | `908ca42` | ACCEPT |
 | W11 | `xvyimu/cv-adr0005-onepager` | `b4cbc94` | ACCEPT |
 | W12 | `xvyimu/cv-long-verify` | `40e5796` | ACCEPT · **npm test 全 0** |
-| coord | `xvyimu/cv-coord` | `cf99b2d`+ | 进度 SSOT（可选合 / 可留支） |
+| CR | `xvyimu/cv-cr-cdp-bind-docs` | `2991838` | ACCEPT · CV-CR-001/002 loopback docs · **`M` SECURITY.md · usage** |
+| coord | `xvyimu/cv-coord` | `08c973b`+ | 进度 SSOT（可选合 / 可留支） · **DONE-ALL** |
 
 ### 门闩（稳定运行 · unit + idle 装态）
 
@@ -60,6 +61,7 @@
 | **W11** adr0005 | `b4cbc94` | `A` `docs/ops/cv-adr0005-defer-2026-07-24.md` |
 | **W1** scout | `9e2ba87` | `A` `docs/ops/cv-scout-health-evidence-2026-07-24.md`（**权威 scout**；W4 内拷贝以 W1 为准） |
 | **W10** pain | `908ca42` | `A` pain-close evidence · **`M` PAIN-POINTS.md · CHANGELOG · overview** |
+| **CR** cdp-bind | `2991838` | `A` evidence · **`M` SECURITY.md · usage**（loopback 运维句） |
 
 ### P1 证据-only（几乎纯 A）
 
@@ -79,8 +81,9 @@
 | `docs/ops/cv-scout-health-evidence-*.md` | W1 权威 · W4 亦 A 拷贝 | **以 W1 tip 为准**；合 W4 时丢弃重复或后覆盖 |
 | `docs/usage.md` · `docs/ops/cv-day-ready-*.md` | **仅 W4 M** | 单独审 diff 后合 |
 | `docs/PAIN-POINTS.md` · CHANGELOG · overview | **仅 W10 M** | 脚注级；与 W4 无同文件冲突 |
+| `docs/SECURITY.md` · `docs/usage.md` | **CR `M`** · W4 亦 `M` usage | 合 CR 时与 W4 **审 usage 合并**；SECURITY 仅 CR |
 
-**业务码 / injector / themes 资源：** 各支相对 main **无必合实现 diff**（NO-CODE）。
+**业务码 / injector / themes 资源：** 各支相对 main **无必合实现 diff**（NO-CODE · CR 仅 docs）。
 
 ---
 
@@ -101,6 +104,7 @@ git merge --no-ff origin/xvyimu/cv-doctor-smoke-docs -m "docs: W4 doctor/smoke m
 git merge --no-ff origin/xvyimu/cv-long-verify -m "docs: W12 long-verify npm test exit 0"
 git merge --no-ff origin/xvyimu/cv-adr0005-onepager -m "docs: W11 ADR0005 DEFER"
 git merge --no-ff origin/xvyimu/cv-pain-close-batch -m "docs: W10 PAIN close-batch (no fake-close)"
+git merge --no-ff origin/xvyimu/cv-cr-cdp-bind-docs -m "docs: CR-001/002 CDP control loopback bind"
 
 # 3) P1 证据串
 for b in cv-themes-contracts cv-cdp-url-guard cv-catalog-budget \
