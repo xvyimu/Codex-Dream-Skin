@@ -7,29 +7,30 @@ SSOT：[`WEEK-BACKLOG.md`](./WEEK-BACKLOG.md) · [`INTEGRATE.md`](./INTEGRATE.md
 
 ---
 
-## 0. 状态（7m · W1–12 齐 · 整理 INTEGRATE）
+## 0. 状态（findings 消化 · 2026-07-24）
 
 | 层 | 状态 |
 |----|------|
-| W1–W12 | **全部 ACCEPT**（W3 SKIP）· origin tips 见 INTEGRATE §0 |
-| W13 | **READY_FOR_HUMAN_GATE** · 可复制 merge 序 · **不**自动合 main |
-| live 实现 child | **0** |
-| coord dirty | 本巡检整理后 commit |
-| findings fix wt | **无** |
+| W1–W12 | **全部 ACCEPT**（W3 SKIP） |
+| W13 INTEGRATE | **READY_FOR_HUMAN_GATE** · findings §6 已并入 · **不**自动合 main |
+| code-review | 源 `…/code-review/codexveil-findings.md` · **无新 P0** · 栈锁健康 |
+| **cv-cr-cdp-bind-docs** | **LIVE** · P1 docs（CV-CR-001/002）· live 1/3 |
+| findings 其余 P1 | 003–006 **已由长波证据覆盖** · 不单开 wt |
+| P2 | 不单开 |
 
-### 门闩
+### 门闩（长波）
 
 | 命令 | exit |
 |------|------|
 | `npm test` | **0**（W12） |
 | doctor idle | **0** · fresh · `1.3.25-da2adc` |
-| deps / cdp / catalog / themes | **0** |
+| control-plane bind | 码侧 `listen(port,"127.0.0.1")`（CR-002） |
 
-### 总控姿态（勿停）
+### 总控姿态
 
-- **不**再默认开 W* 实现 wt（队列实现项已尽）  
-- **保持** 7m 巡检：list/ps · dirty commit · 等人 gate  
-- 人授权后才：integrate 支 / PR / publish  
+- INTEGRATE **等人合入** · 总控在线  
+- findings **无 P0** → 不抢 integrate；仅 1× docs cr wt  
+- 禁 asar / 第二 injector / push main / publish  
 
 ---
 
@@ -37,25 +38,21 @@ SSOT：[`WEEK-BACKLOG.md`](./WEEK-BACKLOG.md) · [`INTEGRATE.md`](./INTEGRATE.md
 
 | name | status |
 |------|--------|
-| main | `D:/orca/Codexveil` @ `ebc3568` ≡ origin/main |
-| cv-coord | 总控 · in-review 等人 |
+| main | `D:/orca/Codexveil` @ `ebc3568` |
+| cv-coord | 总控 · INTEGRATE 等人 |
+| **cv-cr-cdp-bind-docs** | **LIVE** · findings P1 docs |
 
-**磁盘残渣（非 orca/git wt）：** `cv-long-verify` / `cv-scout-health` / `cv-themes-contracts` 碎片目录 · `ship-d1-cv` 空 · 见 INTEGRATE §4 · 可选人清  
+## 2. findings 处置摘要
 
----
+| id | 处置 |
+|----|------|
+| P0 | **无** |
+| CV-CR-001/002 | docs wt LIVE · 码侧 loopback 已有 |
+| CV-CR-003–006 | 长波 W5/W6/W4/W7/W11 已覆盖 → 合入即可 |
+| P2 | 不单开 |
 
-## 2. 本巡检
+## 3. 等人 / 下一巡检
 
-1. list：无 DONE child 可 rm  
-2. 确认 W1–12 origin tips  
-3. 整理 INTEGRATE → 人 gate 就绪（文件清单 + merge 脚本 + 冲突面）  
-4. 更新 backlog 状态板  
-5. **未** push main · **未** publish/asar  
-
----
-
-## 3. 等人
-
-1. 按 INTEGRATE §2 合入 docs → main  
-2. publish **另授**  
-3. 可选 live smoke / #25  
+1. 人 gate：INTEGRATE §2 合 docs→main  
+2. 收 `cv-cr-cdp-bind-docs` DONE → push feature → rm  
+3. publish **另授**  
