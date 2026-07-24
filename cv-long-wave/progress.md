@@ -1,73 +1,58 @@
 # Codexveil · cv-long-wave progress
 
 **总控：** `cv-coord` · `xvyimu/cv-coord`  
-**产品：** `D:\orca\Codexveil` · base `main` @ `ebc3568`  
 **红线：** 单 injector · 禁 asar · 禁 vendor · 禁 publish · 禁 push **main** · feature push OK  
 
-SSOT：[`WEEK-BACKLOG.md`](./WEEK-BACKLOG.md)
+SSOT：[`WEEK-BACKLOG.md`](./WEEK-BACKLOG.md) · [`INTEGRATE.md`](./INTEGRATE.md)
 
 ---
 
-## 0. 状态机（强制续航巡检）
+## 0. 状态（7m 巡检）
 
-| ID | 状态 | tip / 注 |
-|----|------|----------|
-| W1 scout | **ACCEPT** | `9e2ba87` origin |
-| W2 themes | **ACCEPT NO-CODE** | `65c38a3` origin |
-| W3 fix | **SKIP** | 无红 |
-| W4 doctor-smoke | **ACCEPT** | `2aa2b0b` origin |
-| W5 cdp-url | **ACCEPT NO-CODE** | `5032a98` origin · exit cdp/fresh/deps **0** |
-| W6 catalog-budget | **ACCEPT NO-CODE** | `fb9f4d4` origin · budget+quality **0** |
-| W7 launcher | QUEUED | 后置 |
-| W8 core-runtime | **ACCEPT NO-CODE** | `f08112c` origin · deps **0** · 互引 0 |
-| **W9** arina-only docs | **LIVE** | |
-| **W10** pain-close | **LIVE** | |
-| W11 adr0005 | **ACCEPT** | `b4cbc94` origin · 零壳 |
-| **W12** long-verify | **LIVE** | |
-| W13 INTEGRATE | QUEUED | 等 W12 · **publish 另授** |
+| ID | 状态 | tip |
+|----|------|-----|
+| W1–W6 · W8 · W11 | **ACCEPT** | 见 INTEGRATE 表 · origin |
+| **W9** arina-only | **ACCEPT** | `f48255d` origin · catalog-quality/themes **0** · NO-CODE |
+| **W10** pain-close | **LIVE** | 仍写中 |
+| **W12** long-verify | **ACCEPT** | `40e5796` origin · **npm test 全 0** · doctor 0 |
+| **W7** launcher-tray | **LIVE** | 本巡检新开 |
+| **W13** INTEGRATE | **DRAFT** | `cv-long-wave/INTEGRATE.md` · 不自动 merge main |
 
-**live 3/3：** W9 · W10 · W12  
-**code-review findings 路径：** 本轮未发现待消化 P0/P1 文件；无 fix wt。
+**live 2/3：** W10 · W7  
+**findings fix wt：** 无
 
-### 0.1 本轮动作
+### 门闩（稳定运行）
 
-1. list/ps：W5/W6/W8 evidence DONE · origin 已齐  
-2. 总控审 PASS → stop/rm 三 wt  
-3. 开 W9/W10/W12  
-4. feature 支 origin 保留 tip；**未** push main  
-
-### 0.2 门闩累计（evidence 已记 exit）
-
-| 面 | exit |
-|----|------|
-| themes / store / adapter / contracts | **0**（W2） |
-| doctor（idle） | **0**（W1/W4） |
-| cdp-url / freshness / deps | **0**（W5/W8） |
-| catalog-budget / quality | **0**（W6） |
-| `npm test` 全量 | **待 W12** |
+| 命令 | exit | 证据 |
+|------|------|------|
+| `npm test` | **0** | W12 |
+| 分项 unit 全表 | **0** | W12 |
+| doctor idle | **0** · fresh · `1.3.25-da2adc` | W12 |
 
 ---
 
 ## 1. orca 名表
 
-| displayName | branch | status |
-|-------------|--------|--------|
-| main | main | 主 |
-| cv-coord | xvyimu/cv-coord | 总控 |
-| cv-theme-arina-only-docs | xvyimu/cv-theme-arina-only-docs | **LIVE W9** |
-| cv-pain-close-batch | xvyimu/cv-pain-close-batch | **LIVE W10** |
-| cv-long-verify | xvyimu/cv-long-verify | **LIVE W12** |
+| name | status |
+|------|--------|
+| main | 主 |
+| cv-coord | 总控 |
+| cv-pain-close-batch | **LIVE W10** |
+| cv-launcher-tray-stability | **LIVE W7** |
 
 ---
 
-## 2. 下一批
+## 2. 本巡检动作
 
-W9–W12 收齐 → 可选 W7 launcher 小稳 → **W13 INTEGRATE.md**（合入计划 · 不自动 merge main · publish 另授）
+1. 审 W12 PASS · W9 PASS → commit/push feature · stop/rm  
+2. 保留 W10  
+3. 开 W7 · 起草 W13 INTEGRATE  
+4. 无 asar / main push / publish  
 
 ---
 
-## 3. 红线
+## 3. 下一巡检
 
-- [x] 无 asar / 第二 injector / vendor / publish / push main  
-- [x] evidence 含 exit  
-- [x] live ≤3  
+- 收 W10 · W7 → 更新 INTEGRATE tip  
+- 人 gate 按 INTEGRATE 合入 docs（可选）  
+- publish **另授**  
