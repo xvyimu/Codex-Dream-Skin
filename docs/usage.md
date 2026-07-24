@@ -204,6 +204,8 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File "$env:LOCALAPPDATA\Pro
 | 想再看首次入口提示 | 删 `%LOCALAPPDATA%\CodexDreamSkin\first-run-shown.flag` 后点任务栏 Codex |
 | 旧 heige / Codex Studio 入口 | **已废弃**；删残留快捷方式后只用本产品 Codex |
 
+维护者 / 运维：先 `npm run doctor`（只读），再按字段决定是否 smoke / 修复。命令表、风险、与 `npm test` 关系见 [`ops/cv-doctor-smoke-map-2026-07-24.md`](./ops/cv-doctor-smoke-map-2026-07-24.md)。**勿**把 `check-and-fix` 当 CI。
+
 ---
 
 ## 关键路径

@@ -96,6 +96,8 @@ Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' |
 
 ## 4. 故障树（先 doctor，再动手）
 
+运维命令地图（何时 doctor / smoke / 勿当 CI）：[`cv-doctor-smoke-map-2026-07-24.md`](./cv-doctor-smoke-map-2026-07-24.md)。
+
 前置：
 
 ```powershell
