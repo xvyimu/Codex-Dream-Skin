@@ -51,20 +51,20 @@ SSOT：[`WEEK-BACKLOG.md`](./WEEK-BACKLOG.md) · [`INTEGRATE.md`](./INTEGRATE.md
 | name | status |
 |------|--------|
 | main | `D:/orca/Codexveil` @ `ebc3568` |
-| cv-coord | 总控 · INTEGRATE 等人 |
-| **cv-cr-cdp-bind-docs** | **LIVE** · findings P1 docs |
+| cv-coord | 总控 · **DONE-ALL** · INTEGRATE 等人 |
 
 ## 2. findings 处置摘要
 
 | id | 处置 |
 |----|------|
 | P0 | **无** |
-| CV-CR-001/002 | docs wt LIVE · 码侧 loopback 已有 |
-| CV-CR-003–006 | 长波 W5/W6/W4/W7/W11 已覆盖 → 合入即可 |
+| CV-CR-001/002 | **ACCEPT** `2991838` · SECURITY/usage + evidence · 测 0/0 |
+| CV-CR-003–006 | 长波覆盖 → 合入证据即可 |
 | P2 | 不单开 |
 
-## 3. 等人 / 下一巡检
+## 3. 等人（唯一出口 · 总控在线）
 
-1. 人 gate：INTEGRATE §2 合 docs→main  
-2. 收 `cv-cr-cdp-bind-docs` DONE → push feature → rm  
-3. publish **另授**  
+1. 人 gate：[`INTEGRATE.md`](./INTEGRATE.md) §2 合 docs→main（含 CR 支）  
+2. publish **另授**  
+3. 可选 live smoke（#25）— 另授  
+

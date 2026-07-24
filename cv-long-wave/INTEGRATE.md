@@ -197,4 +197,5 @@ npm test          # expect exit 0
 | 仅 P1 且码侧已满足（001/002 大部） | **并入本 INTEGRATE 等人** + 最多 1 个 **docs** fix |
 | P2 | 不单开 · 记 backlog |
 
-**本轮：** 无 P0 → **维持 READY_FOR_HUMAN_GATE**；可选 live≤1 docs wt 消化 001 文案。
+**本轮：** 无 P0 → **READY_FOR_HUMAN_GATE**。  
+**CV-CR-001/002：** `xvyimu/cv-cr-cdp-bind-docs` @ **`2991838` ACCEPT** · `test:cdp-url`/`test:control` **0** · 已进 §0/§1/§2 合入序。
