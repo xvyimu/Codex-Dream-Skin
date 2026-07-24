@@ -204,6 +204,11 @@ powershell -NoProfile -ExecutionPolicy RemoteSigned -File "$env:LOCALAPPDATA\Pro
 | 想再看首次入口提示 | 删 `%LOCALAPPDATA%\CodexDreamSkin\first-run-shown.flag` 后点任务栏 Codex |
 | 旧 heige / Codex Studio 入口 | **已废弃**；删残留快捷方式后只用本产品 Codex |
 
+### doctor 与端口（安全）
+
+`doctor` 若报告 CDP / control **portOpen**，只表示本机 loopback 上端口在听（默认 **9335** / **9336**），**不是**「应暴露到局域网」的信号。  
+**禁止**把这些端口转发或放行到 LAN / 公网。威胁模型与绑定见 [`SECURITY.md`](./SECURITY.md) · 入口 token 见 [`dual-open-policy.md`](./dual-open-policy.md)。
+
 ---
 
 ## 关键路径

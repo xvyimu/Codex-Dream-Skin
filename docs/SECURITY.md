@@ -58,6 +58,12 @@ Out-of-scope examples:
 | Post-update failure observability | `docs/contracts/post-update-report.md` |
 | Release evidence (DOM) | `docs/evidence/` · `Run-ReleaseProbes.ps1` (real dumps gitignored) |
 
+### Loopback ports (ops)
+
+- **CDP default `9335`** and **control-plane default `9336`** (scan `9336..9346`) bind **loopback only** (`127.0.0.1` for control; CDP attach only accepts loopback WebSocket hosts via `cdp-url-guard`).
+- **Do not** port-forward, reverse-proxy, or firewall-open these ports to the LAN / Internet. Same-user malware remains same-privilege by design (see threat model above).
+- Evidence / regression: `npm run test:cdp-url` · `npm run test:control` · [`docs/ops/cv-cr-cdp-bind-docs-evidence-2026-07-24.md`](./ops/cv-cr-cdp-bind-docs-evidence-2026-07-24.md).
+
 ## Third-party material
 
 This repository does **not** ship a `vendor/` tree. All install-plane sources are first-party under `apps/` / `packages/` / `themes/`. See root `NOTICE` and ADR 0006.
