@@ -21,12 +21,13 @@
 | W4 | `xvyimu/cv-doctor-smoke-docs` | `2aa2b0b` | doctor/smoke map | **P0 docs**（运维 SSOT） |
 | W5 | `xvyimu/cv-cdp-url-guard` | `5032a98` | cdp/freshness | P1 docs |
 | W6 | `xvyimu/cv-catalog-budget` | `fb9f4d4` | catalog budget | P1 docs |
+| W7 | `xvyimu/cv-launcher-tray-stability` | `a2d03c0` | 单 open→单 watch 审计 | P1 docs |
 | W8 | `xvyimu/cv-core-runtime-boundary` | `f08112c` | deps 审计 | P1 docs |
-| W9 | `xvyimu/cv-theme-arina-only-docs` | （本轮 commit） | arina-only 对齐 | P1 docs |
-| W10 | `xvyimu/cv-pain-close-batch` | LIVE | PAIN 关单 | 待收 |
+| W9 | `xvyimu/cv-theme-arina-only-docs` | `f48255d` | arina-only 对齐 | P1 docs |
+| W10 | `xvyimu/cv-pain-close-batch` | `908ca42` | PAIN 关单审计（脚注） | **P0 docs** |
 | W11 | `xvyimu/cv-adr0005-onepager` | `b4cbc94` | ADR0005 DEFER | **P0 docs** |
 | W12 | `xvyimu/cv-long-verify` | `40e5796` | npm test 全 exit 0 | **P0 docs** |
-| coord | `xvyimu/cv-coord` | 进度 SSOT | long-wave / backlog | 可选保留支或摘 progress |
+| coord | `xvyimu/cv-coord` | 进度 SSOT | long-wave / backlog / INTEGRATE | 可选 |
 
 **无代码冲突预期：** 各支几乎只加 `docs/ops/cv-*-*.md`（W4 可能触 usage/day-ready 交叉链 — 合入前 `git log --stat` 复核）。
 
@@ -79,8 +80,8 @@
 
 | 项 | 值 |
 |----|-----|
-| 卡 | W13 INTEGRATE 计划 **DRAFT** |
+| 卡 | W13 INTEGRATE 计划 **DRAFT · 周实现项 ACCEPT 齐** |
 | 自动 merge main | **否** |
-| 下一动作 | 收 W10 · 可选 W7 · 人批合入序 |
+| 下一动作 | **人 gate** 按 §3 合入 docs；publish 另授 |
 
 **风险一句：** 多 feature 支并行只含 docs 时 merge 冲突低，但 **main 前进后** 须 rebase；装态 fresh 不随 docs merge 自动变。
